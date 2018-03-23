@@ -1,0 +1,63 @@
+%% 3DOF Sailboat Dynamic Model
+
+% Ambient Conditions
+rho_c = 1000;               %kg/m^3, density of water
+rho_w = 1.225;              %kg/m^3, density of air
+g = 9.81;                   %m/s^2, acceleration due to gravity
+
+% Sailboat Properties 
+m_ship = 4;                      % kg, mass of ship
+m_components = 0;                % kg, mass of other components
+m_total = m_ship + m_components; % kg, total mass of ship and components
+
+% Hull Geometry 
+A_ut = 0;                   %m^2, underwater transverse cross-sectional area (TBD)
+A_ul = 0;                   %m^2, underwater longitudinal corss-sectional area (TBD)
+L = 1.0541;                 %m, length of sailboat
+D = 0.4064;                 %m
+
+% Rudder Geometry 
+a_r = 0.1842;               %m
+b_r = 0.0635;               %m, cord length
+S_r = pi*a_r*b_r/4;         %m^2
+
+% Sail Geometry 
+a_s = 1.2383;               %m
+b_s = 0.6366;               %m, cord length
+S_s = a_s*b_s/2;            %m^2
+
+% Lift and Drag Coefficients 
+C_d = 0.75;                 %assumed constant, obtained from angle of   
+C_lr = 1.25;                %attack of 45 degrees 
+C_ls = 1.0;                 %(Equilibirum Sailing Velocities Paper)
+
+% Rigid Body Forces Constants (Table 5.3)
+X_prime_uu = -0.12;
+X_prime_vv = -0.089;
+X_prime_ur = 0.07; 
+X_prime_vr = 0.05; 
+X_prime_rr = 0.011; 
+
+Y_prime_v = -0.244;
+Y_prime_vv = -0.9;
+Y_prime_r = 0.079; 
+Y_prime_vr = -0.25; 
+Y_prime_rr = -0.087; 
+
+N_prime_v = -0.2;
+N_prime_r = -0.044;
+N_prime_vrr = 0.07; 
+N_prime_vvr = -0.6; 
+N_prime_rr = -0.06; 
+
+% Added Mass Forces Constants (Table 5.5)
+X_u_dot = 0.231;                %kg
+Y_u_dot = 9.95;                 %kg
+N_r_dot = 8.1;                  %kg*m^2
+
+% Damping Force Constants (Table 5.6)
+X_u = -4.05;                    %kg/m
+Y_v = 50.8;                     %kg/m
+Y_r = 1.83;                     %kg*m
+N_v = -12.5;                    %kg
+N_r = 2.31;                     %kg*m^2
