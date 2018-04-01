@@ -7,4 +7,8 @@ To use a laptop's mouse and keyboard, you'll need to connect to the RPi with Win
     * USERNAME: pi
     * PASSWORD: eme185
 
+### DOWNLOADING ARDUINO LIBRARIES ON RPI
+Zip folders of the libraries are in the repository . 
+1. Download and unzip the folders for the IMU, GPS, and ANEMOMETER
+2. Move folders to _/usr/share/arduino/libraries/_
 
