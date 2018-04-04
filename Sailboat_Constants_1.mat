@@ -14,7 +14,12 @@ m_total = m_ship + m_components; % kg, total mass of ship and components
 A_ut = 0;                   %m^2, underwater transverse cross-sectional area (TBD)
 A_ul = 0;                   %m^2, underwater longitudinal corss-sectional area (TBD)
 L = 1.0541;                 %m, length of sailboat
-D = 0.4064;                 %m
+D = 0.4064;                 %m, draft length of sailboat
+W = 0.3397;                 %m, width of sailboat 
+T = 0.08255;                %m, thickness of sailboat 
+
+% Moment of Inertia about z-axis
+I_z = 1/5*m_ship*((L/2)^2 + (W/2)^2); 
 
 % Rudder Geometry 
 a_r = 0.1842;               %m
