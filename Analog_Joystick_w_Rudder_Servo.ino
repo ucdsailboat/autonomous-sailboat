@@ -7,24 +7,24 @@ Connections: VRx to A0,  VRy to A1, +5V to 5, and GND to GND
 
 // for joystick
 #include <math.h>  
- 
 int ledPin = 13;
 int joyPin1 = 0;              // slider variable connecetd to analog pin 0
 int joyPin2 = 1;              // slider variable connecetd to analog pin 1
 int x = 0;                    // variable to read the value from the analog pin 0
-int y = 0;                   // variable to read the value from the analog pin 1
-double angle;
-double offsety;
-double offsetx;  
-int resolution = 20;
+int y = 0;                    // variable to read the value from the analog pin 1
+int resolution = 20;          // values scaled between -20 and 20 
+double angle;                 // variable to store arctan of x and y
+double offsetY;               // initial value of X
+double offsetX;               // initial value of Y
+
 
 // for servo
-String readString;
 #include <Servo.h> 
-Servo myservoa; // creates servo object to control sail servo 
+Servo servoR;                 // creates servo object to control rudder servo 
 
-int roffset = 130;
-
+int rOffset = 130;            // offset to zero position (parallel with nose) for Laser rudder
+int deg = 0;                  // input angle into servo
+int rLimit = 45;              // rudder constrained to -45 to 45 rotation 
 
 void setup() {
   Serial.begin(9600);
@@ -32,22 +32,24 @@ void setup() {
   // for joystick
   pinMode(ledPin, OUTPUT);              // initializes digital pins 0 to 7 as outputs
   delay(75);
-  offsety = analogRead(joyPin1);
-  offsetx = analogRead(joyPin2);  
+  offsetY = analogRead(joyPin1);
+  offsetX = analogRead(joyPin2);  
 
 
   // for servo
-  myservoa.write(roffset); //set initial servo position
-  //myservob.write(10); //set initial servo position
+  servoR.attach(6);  //the pin for the servoa control
+  //servoS.attach(7);  //the pin for the servob control
   
-  myservoa.attach(6);  //the pin for the servoa control
-  //myservob.attach(7);  //the pin for the servob control
+  servoR.write(rOffset); //set initial servo position
+  //servoS.write(10); //set initial servo position
 }
 
+// potentiometer value to between -20 and 20
 int treatValue(int data) {
   return (data * (2*resolution+1) / 1024);
  }
 
+// contrain rudder angle between -45 and 45
 int treatAngle(int data) {
   if (data>=-90 && data<=90)
   {
@@ -66,39 +68,36 @@ int treatAngle(int data) {
 void loop() {
   // for joystick 
   // reads the value of the variable resistor 
-  y = treatValue(round(analogRead(joyPin1)-offsety));   
+  y = treatValue(round(analogRead(joyPin1)-offsetY));   
   // this small pause is needed between reading
   // analog pins, otherwise we get the same value twice
   delay(25);             
   
   // reads the value of the variable resistor 
-  x = treatValue(round(analogRead(joyPin2)-offsetx)); 
+  x = treatValue(round(analogRead(joyPin2)-offsetX)); 
 
   delay(25);
   angle = round(atan2(x,y)*180/M_PI);
 
 
   // for servo 
-  int n = treatAngle(angle);  //convert readString into a number
+  deg = treatAngle(angle);  //convert readString into a number
 
-  // auto select appropriate value, copied from someone elses code.
-  if(n>=45)
-  {
+  // rudder fixed at 45 for angles greater than 45 and -45 for angles less than -45
+  if(deg >= rLimit) {
     Serial.print("writing Angle: ");
     Serial.println(45);
-    myservoa.write(45+roffset);
+    servoR.write(rLimit+rOffset);
     }
-    else if(n<=-45)
-    {
+  else if(deg <= -rLimit) {
       Serial.print("writing Angle: ");
       Serial.println(-45);
-      myservoa.write(-45+roffset);
-      }
-      else 
-      {   
-        Serial.print("writing Angle: ");
-        Serial.println(n);
-        myservoa.write(n+roffset);
+      servoR.write(-rLimit+rOffset);
+    }
+  else {   
+    Serial.print("writing Angle: ");
+    Serial.println(deg);
+    servoR.write(deg + rOffset);
         }
       
   Serial.print("\tAngle:");
