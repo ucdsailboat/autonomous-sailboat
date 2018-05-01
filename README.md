@@ -1,9 +1,13 @@
 # autonomous-sailboat
 This is a repository for the Mechanical Engineering senior design project for UC Davis that focuses on developing an autonomous hydrofoil sailboat.
 
-Contributors:
-Sean Blaevoet, Jordan Leung, Michele Shi, Vivian Tran, Bryan Zhao
+__Contributors:__ <br/>
+Sean Blaevoet, <br/>
+Jordan Leung, <br/>
+Michele Shi, <br/>
+Vivian Tran, <br/>
+Bryan Zhao
 
-Special thanks to: <br/>
+__Special thanks to:__ <br/>
 Davi Henrique <br/>
 University of Southampton Sailing Robot Team
