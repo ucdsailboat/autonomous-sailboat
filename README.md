@@ -4,6 +4,6 @@ This is a repository for the Mechanical Engineering senior design project for UC
 Contributors:
 Sean Blaevoet, Jordan Leung, Michele Shi, Vivian Tran, Bryan Zhao
 
-Special thanks to:
-Davi Henrique<br/>
+Special thanks to: <br/>
+Davi Henrique <br/>
 University of Southampton Sailing Robot Team
