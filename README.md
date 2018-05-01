@@ -5,5 +5,5 @@ Contributors:
 Sean Blaevoet, Jordan Leung, Michele Shi, Vivian Tran, Bryan Zhao
 
 Special thanks to:
-Davi Henrique
+Davi Henrique<br/>
 University of Southampton Sailing Robot Team
