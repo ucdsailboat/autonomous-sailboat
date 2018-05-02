@@ -1,5 +1,5 @@
-// Código do veleiro maior. GPS, bússola, biruta e cartão sd (shiled ethernet). A cor correspondente
-// ao ângulo do leme é enviado para o driver do leme.
+// The code for the main sail boat, GPS, compass, wind vane, and sd card (shield ethernet)
+// corresponding to the angle of the rudder sent to the driver of the rudder 
 // this code is for Arduino Mega
 
 #include <StandardCplusplus.h>
@@ -27,7 +27,7 @@ using namespace std;
 
 //Compass: VCC -> 3,3; SDA -> A4; SCL -> A5;;
 //GPS: YELLOW -> GND; ORANGE -> 5V; WITH -> PORTA 2;
-//NORTE DA BIRUTA = FRENTE DO BARCO
+//NORTH OF WIND INDICATOR = FRONT OF BOAT
 
 struct location {
   float latitude;
@@ -47,7 +47,7 @@ float velocidade_vento;
 
 int recByte;
 
-//variáveis da bússola
+//variables of the compass
 int HMC6352Address = 0x42;
 int slaveAddress;
 byte headingData[2];
@@ -61,7 +61,7 @@ int contadorCom = 1; // counter
 int iCom = 0;
 int dado; // data
 
-//variáveis do GPS
+//variables of the GPS
 
 int contador_pontos = 0; // counter_points
 
@@ -71,8 +71,8 @@ float distanciaInicial, distanciaPercorrida, lastDistanciaDestino = 0;
 // initial distance, distance travelled, last distance of destination
 float distanciaAoDestino = 99999999; // distance to destination
 
-//variáveis do PID
-float erroAtual = 0;    // diferença entre o setpoint e a direção atual do barco
+//variables of the PID
+float erroAtual = 0;  
 //difference btwn setpoint and the actual direction of boat. actualError
 float erroAtualalt = 0;
 float erroAnterior = 0; // previous error
