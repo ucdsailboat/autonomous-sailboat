@@ -204,9 +204,11 @@ vector<location> bordejar(struct location *atual, struct location *destino)
 	d_p0 = (float)TinyGPS::distance_between(p0m.latitude, p0m.longitude, x0, y0);
 
 	//insere o ponto encontrado no vetor com os pontos do bordejo
+	// inserts the point found in the vector with the points of the edge 
 	pontos_bordejo.push_back(angleToLocation(latProj, lonProj));
 
 	//encontra as retas paralelas a reta A, onde estão localizados os pontos de bordejo
+	// find the lines parallel to the line A, where the points of edge are located 
 	float b_linha1 = (-a_A * pontos_bordejo.at(0).latitude + pontos_bordejo.at(0).longitude);
 	float y_tira_teima1 = (a_A * pontos_bordejo.at(0).latitude + b_linha1);
 	float x_tira_teima1 = (pontos_bordejo.at(0).longitude - b_linha1) / a_A;
@@ -222,6 +224,7 @@ vector<location> bordejar(struct location *atual, struct location *destino)
 	}
 
 	//encontrando o número total de pontos de bordejo
+	// finding the total number of border points 
 	int num_pontos = (int)floor((float)TinyGPS::distance_between(x0, y0, x, y) / d_p0);
 	float teste = (float)TinyGPS::distance_between(x0, y0, x, y);
 
@@ -232,6 +235,7 @@ vector<location> bordejar(struct location *atual, struct location *destino)
 	float tt_y = y0 + delta_y;
 
 	//encontra a projeção dos pontos iniciais nas duas retas paralelas
+	// finds the projection of the initial points in the two parallel lines 
 	location p0l1 = projecao2d(p0m.latitude, p0m.longitude, a_A, b_linha1);
 	location p0l2 = projecao2d(p0m.latitude, p0m.longitude, a_A, b_linha2);
 	int bom = 1;
@@ -290,6 +294,7 @@ vector<location> bordejar(struct location *atual, struct location *destino)
 void setup()
 {
 	// escolhendo waypoins
+	// choosing waypoints 
 	targetLocation.latitude = 0.0013888888;
 	targetLocation.longitude = 0;
 	waypoints.push_back(targetLocation);
@@ -304,10 +309,10 @@ void setup()
 
 	slaveAddress = HMC6352Address >> 1;
 	Serial.begin(9600);  // Comunicação exterior xbee
-	Serial1.begin(9600); // Comunicação entre arduinos (receber estação meteorologica e enviar setpoint para o leme)
+	Serial1.begin(9600); // Communication b/w arduinos (recieve weather station and send setpoint to the rudder)
 	//Serial2.begin(9600); 
 	Serial3.begin(4800); // GPS
-	Wire.begin();       // Bússola  
+	Wire.begin();       // Compass 
 	starttime = millis();
 }
 
@@ -363,6 +368,7 @@ void loop() {
 			controle_rudder();
 			
 			// caso o veleiro não esteja avançando ao destino. solução: selecionar outro waypoint
+			// if the sailboat is not advancing to the destination. Solution: select another waypoint
 			if(distanciaAoDestino >= lastDistanciaDestino){
 				if(contador_bug == 0){
 					start = millis();
