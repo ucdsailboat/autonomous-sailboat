@@ -103,7 +103,7 @@ boolean alcancouAlvo = false; // boolean hit the target = false
 boolean isBordejando = false; // boolean  is following wind direction
 int waypointId = 0, waypointBId = 0, controle = 0;
 float angulo_bordejo = 60; // angle_boat following wind direction.
-float taxa_dist = 0.2;
+float taxa_dist = 0.2; //rate_distance
 
 location startLocation, currentLocation, lastLocation, nextLocation, targetLocation;
 
@@ -120,6 +120,7 @@ int contador_bug = 0; // counter
 
 // actual                                  destination
 // atual is a pointer to location object 
+// borderjar - following wind direction
 vector<location> bordejar(struct location *atual, struct location *destino)
 {
 	// bordejo - noun version 
@@ -128,17 +129,19 @@ vector<location> bordejar(struct location *atual, struct location *destino)
 // biruta - sail 
 	float heeling = biruta + heading;
 	heeling = saturador(heeling);
-
+	
+	// latitude of actual location
 	float x0 = atual->latitude; //accessing member
+	//longitude of actual location
 	float y0 = atual->longitude;
 	float x = destino->latitude;
 	float y = destino->longitude;
 
-//  distance_following wind direction = rate_dist * distnaceInitial
+//  distance_following wind direction = rate_dist * distanceInitial
 	float distancia_bordejar = taxa_dist * distanciaInicial;
 
-// calculates the line between the start and the destination point
-	float a_A = (y - y0) / (x - x0);
+// calculates the path between the start and the destination point
+	float a_A = (y - y0) / (x - x0); //destination - actual 
 	float b_A = y0 - (a_A * x0);
 	//float x_temp = x0;
 	//float y_temp = a_A * x_temp + b_A;
@@ -167,7 +170,7 @@ vector<location> bordejar(struct location *atual, struct location *destino)
 
 	float latProj = x;
 	float lonProj = y;
-
+	// ponto - score 
 	location pontoProj;
 
 	float latIni = x0;
@@ -176,9 +179,12 @@ vector<location> bordejar(struct location *atual, struct location *destino)
 	float lonFim = y;
 
 	while (abs(d - distancia_bordejar) > 1) {
+		//latAverage	 latEnd    latStart
 		float latMedia = (latFim + latIni) / 2;
+		//longAverage     longEnd    longStart
 		float lonMedia = (lonFim + lonIni) / 2;
-
+		
+		// projection2d_mod
 		pontoProj = projecao2d_mod(latMedia, lonMedia, a_A, b_A, a_B, b_B);
 		
 		d = (float)TinyGPS::distance_between(latMedia, lonMedia, pontoProj.latitude, pontoProj.longitude);
@@ -274,7 +280,7 @@ vector<location> bordejar(struct location *atual, struct location *destino)
 	}
 	
 	int tamanho_pontos_bordejo = pontos_bordejo.size();
-
+									    //size_points_following the wind direction
 	float d_p0_pu = (float)TinyGPS::distance_between(pontos_bordejo.at(tamanho_pontos_bordejo-1).latitude, pontos_bordejo.at(tamanho_pontos_bordejo-1).longitude, atual->latitude, atual->longitude);
 	float d_p0_pd = (float)TinyGPS::distance_between(x0, y0, x, y);
 
