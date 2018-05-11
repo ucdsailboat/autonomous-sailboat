@@ -400,8 +400,10 @@ void loop() {
 			}
 		}
 		lastLocation = currentLocation;
+		//update_ position
 		atualizar_posicao(currentLocation);
 		heading = dir_bussola();
+		// save_data()
 		salvar_dados();
 	}
 }
