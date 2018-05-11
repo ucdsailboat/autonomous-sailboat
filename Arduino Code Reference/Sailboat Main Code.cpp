@@ -267,6 +267,7 @@ vector<location> bordejar(struct location *atual, struct location *destino)
 			bom = z;
 		}
 		else {
+							// vector.at - access an element 
 			location controle1 = pontos_bordejo.at(z - 1);
 			float aux = abs((heeling - abs(saturador(sp))));
 			float delta_xaux = aux * delta_x / 31;
@@ -274,6 +275,7 @@ vector<location> bordejar(struct location *atual, struct location *destino)
 			float lat_temp = p0l2.latitude + delta_x_temp - delta_xaux;
 			float lon_temp = p0l2.longitude + delta_y_temp - delta_yaux;
 			location controle_loc = angleToLocation(lat_temp, lon_temp);
+			// push_back - add element at the end 
 			pontos_bordejo.push_back(controle_loc);
 			ruim = z;
 		}
