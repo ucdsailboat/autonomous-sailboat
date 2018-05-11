@@ -1,9 +1,13 @@
+//Anemometer loop is currently in the GPS timer loops that displays every 2000ms 
+
+int i=0;
 //Anemometer libraries 
 #include <math.h>  
 
 //GPS libraries 
-#include <SoftwareSerial.h>
 #include <Adafruit_GPS.h>
+#include <SoftwareSerial.h>
+
 
 
 //Anemometer Setup
@@ -26,25 +30,23 @@ unsigned long previousMillis = 0;         // millis() returns an unsigned long
 void getHeading(int direction);       // defines ranges for compass rose
 
 //GPS Init
-#define GPSECHO  false                //Set GPSECHO to 'false' to turn off echoing the raw GPS data to the Serial console
+#define GPSECHO  true               //Set GPSECHO to 'false' to turn off echoing the raw GPS data to the Serial console
 // If using software serial, keep this line enabled
 // (you can change the pin numbers to match your wiring):
-//SoftwareSerial mySerial(3, 2);
+SoftwareSerial mySerial(3,2);       //3,2 originally
 
 // If using hardware serial (e.g. Arduino Mega), comment out the
 // above SoftwareSerial line, and enable this line instead
 // (you can change the Serial number to match your wiring):
-HardwareSerial mySerial = Serial1;
+//HardwareSerial mySerial = Serial1;
+
 Adafruit_GPS GPS(&mySerial);
 uint32_t timer = millis();
-
-
-//GPS prototyping
-SIGNAL(TIMER0_COMPA_vect); 
-void useInterrupt(boolean v); 
+boolean usingInterrupt=false;
+void useInterrupt(boolean);       //GPS prototyping
 
 void setup() {
-  Serial.begin(9600); // min baud rate for GPS is 115200 so may have to adjust 
+  Serial.begin(115200); // min baud rate for GPS is 115200 so may have to adjust 
 
   // Anemometer Wind Direction Setup
   pinMode(WindSensorPin, INPUT); 
@@ -73,6 +75,7 @@ void setup() {
   // every 1 millisecond, and read data from the GPS for you. that makes the
   // loop code a heck of a lot easier!
   useInterrupt(true);
+ 
 
   delay(1000);
   // Ask for firmware version
@@ -80,9 +83,35 @@ void setup() {
 }
 
 void loop() {
-
+ 
+  //GPS Loop
+      // in case you are not using the interrupt above, you'll
+  // need to 'hand query' the GPS, not suggested :(
+  if (! usingInterrupt) {
+    // read data from the GPS in the 'main loop'
+    char c = GPS.read();
+    // if you want to debug, this is a good time to do it!
+    if (GPSECHO)
+      if (c) Serial.print(c);
+  }
   
-  //Anemometer Loop
+  // if a sentence is received, we can check the checksum, parse it...
+  if (GPS.newNMEAreceived()) {
+    // a tricky thing here is if we print the NMEA sentence, or data
+    // we end up not listening and catching other sentences! 
+    // so be very wary if using OUTPUT_ALLDATA and trytng to print out data
+  
+    if (!GPS.parse(GPS.lastNMEA()))   // this also sets the newNMEAreceived() flag to false
+      return;  // we can fail to parse a sentence in which case we should just wait for another
+  }
+
+  // if millis() or timer wraps around, we'll just reset it
+  if (timer > millis())  timer = millis();
+
+  // approximately every 2 seconds or so, print out the current stats
+  if (millis() - timer > 2000) { 
+    timer = millis(); // reset the timer
+      //Anemometer Loop
   VaneValue = analogRead(A4); 
   Direction = map(VaneValue, 0, 1023, 0, 360); 
   CalDirection = Direction + Offset; 
@@ -102,46 +131,13 @@ void loop() {
     RotationsCounter = 0;         // Set Rotations count to 0 ready for calculations 
     previousMillis = millis();
     }
-    
-    Serial.print(VaneValue); Serial.print("\t\t");
-    Serial.print(CalDirection); Serial.print("\t\t"); 
-    getHeading(CalDirection); Serial.print("\t\t"); 
-    Serial.print(Rotations); Serial.print("\t\t"); 
-    Serial.println(WindSpeed); Serial.print("\t\t");
-
-
-
-
-
-  //GPS Loop
-      // in case you are not using the interrupt above, you'll
-  // need to 'hand query' the GPS, not suggested :(
-  if (! usingInterrupt) {
-    // read data from the GPS in the 'main loop'
-    char c = GPS.read();
-    // if you want to debug, this is a good time to do it!
-    if (GPSECHO)
-      if (c) Serial.print(c);
-  }
   
-  // if a sentence is received, we can check the checksum, parse it...
-  if (GPS.newNMEAreceived()) {
-    // a tricky thing here is if we print the NMEA sentence, or data
-    // we end up not listening and catching other sentences! 
-    // so be very wary if using OUTPUT_ALLDATA and trytng to print out data
-    //Serial.println(GPS.lastNMEA());   // this also sets the newNMEAreceived() flag to false
-  
-    if (!GPS.parse(GPS.lastNMEA()))   // this also sets the newNMEAreceived() flag to false
-      return;  // we can fail to parse a sentence in which case we should just wait for another
-  }
+    //Serial.print(VaneValue); Serial.print(",");
+    Serial.print(CalDirection); Serial.print(" "); 
+    getHeading(CalDirection); Serial.print(","); 
+    //Serial.print(Rotations); Serial.print(","); 
+    Serial.print(WindSpeed); Serial.print(",");
 
-  // if millis() or timer wraps around, we'll just reset it
-  if (timer > millis())  timer = millis();
-
-  // approximately every 2 seconds or so, print out the current stats
-  if (millis() - timer > 2000) { 
-    timer = millis(); // reset the timer
-    
     /*
     Serial.print("\nTime: ");
     Serial.print(GPS.hour, DEC); Serial.print(':');
@@ -155,21 +151,35 @@ void loop() {
     Serial.print("Fix: "); Serial.print((int)GPS.fix);
     Serial.print(" quality: "); Serial.println((int)GPS.fixquality); 
     */
-    
+    if (!(GPS.fix)){
+      Serial.print(0.00000000, 8);     //These still work with Google Maps
+      Serial.print(","); 
+      Serial.print(0.0000000000, 8);
+      Serial.print(","); 
+      Serial.println (i, 8);
+      i++;
+    }
     if (GPS.fix) {
       //Serial.print("Location: ");
       //Serial.print(GPS.latitude, 4); Serial.print(GPS.lat);
-      //Serial.print(", "); 
+      //Serial.print(","); 
       //Serial.print(GPS.longitude, 4); Serial.println(GPS.lon);
-      Serial.print("Location (in degrees, works with Google Maps): ");
-      Serial.print(GPS.latitudeDegrees, 4);
-      Serial.print(", "); 
-      Serial.print(GPS.longitudeDegrees, 4);
-      Serial.print(", "); 
-      Serial.print("Speed (knots): "); Serial.println(GPS.speed);
-      Serial.print("Angle: "); Serial.println(GPS.angle);
-      Serial.print("Altitude: "); Serial.println(GPS.altitude);
-      Serial.print("Satellites: "); Serial.println((int)GPS.satellites);
+      //Serial.print("Location (in degrees, works with Google Maps): ");
+      
+      Serial.print(GPS.latitudeDegrees, 8);     //These still work with Google Maps
+      Serial.print(","); 
+      Serial.print (GPS.longitudeDegrees, 8);
+      Serial.print(","); 
+      Serial.println (i, 8);
+      i++;
+      //Serial.print(","); 
+      //Serial.print(GPS.speed);        //knots
+      //Serial.print(","); 
+      //Serial.print(GPS.angle);
+      //Serial.print("Altitude: "); 
+      //Serial.print(GPS.altitude);
+      //Serial.print(","); 
+      //Serial.println((int)GPS.satellites);
     }
   }
 
