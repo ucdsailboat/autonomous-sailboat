@@ -43,7 +43,7 @@ SIGNAL(TIMER0_COMPA_vect);      // Interrupt is called once a millisecond, looks
 void useInterrupt(boolean);     //GPS interrupt
 
 void setup() {
-  Serial.begin(115200); // min baud rate for GPS is 115200 so may have to adjust 
+  Serial.begin(9600); // min baud rate for GPS is 115200 so may have to adjust 
   
   // Anemometer Wind Direction Setup
   pinMode(WindSensorPin, INPUT); 
@@ -125,7 +125,7 @@ void loop() {
       }
     
     //Serial.print(VaneValue); Serial.print(",");
-    Serial.print(CalDirection); Serial.print(" "); 
+    Serial.print(CalDirection); Serial.print(","); 
     Serial.print(WindSpeed); Serial.print(",");
     
     if (!(GPS.fix)){
@@ -133,7 +133,7 @@ void loop() {
       Serial.print(","); 
       Serial.print(0.0000000000, 8);
       Serial.print(","); 
-      Serial.println(GPS.speed);        //knots
+      Serial.println(0.0000,4);        //knots
       i++;
     }
     if (GPS.fix) { 
@@ -141,7 +141,7 @@ void loop() {
       Serial.print(","); 
       Serial.print(GPS.longitudeDegrees, 8);
       Serial.print(","); 
-      Serial.println(GPS.speed);                //knots
+      Serial.println(GPS.speed,4);                //knots
       i++; 
     }
   }
