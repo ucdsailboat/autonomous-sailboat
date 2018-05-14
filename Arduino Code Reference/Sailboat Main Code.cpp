@@ -124,6 +124,7 @@ int contador_bug = 0; // counter
 vector<location> bordejar(struct location *atual, struct location *destino)
 {
 	// bordejo - noun version 
+	// holds the points 
 	vector<location> pontos_bordejo;
 
 // biruta - sail 
@@ -280,7 +281,7 @@ vector<location> bordejar(struct location *atual, struct location *destino)
 			ruim = z;
 		}
 	}
-	
+	// size_points_following wind direction
 	int tamanho_pontos_bordejo = pontos_bordejo.size();
 									    //size_points_following the wind direction
 	float d_p0_pu = (float)TinyGPS::distance_between(pontos_bordejo.at(tamanho_pontos_bordejo-1).latitude, pontos_bordejo.at(tamanho_pontos_bordejo-1).longitude, atual->latitude, atual->longitude);
@@ -327,15 +328,20 @@ void setup()
 void loop() {
 	
 	for(int c = 0; c < 10; c++){
+		// updates position 10 times before starting 
 		atualizar_posicao(startLocation);
 		delay(500);
 	}
 
+	// saves the currentLocation at lastLocation variable
 	lastLocation = currentLocation;
+	// updates the latitude and longitude of currentLocation 
 	atualizar_posicao(currentLocation);
+	// updates heading from the compass
 	heading = dir_bussola();
 
 	while (1) {
+		// if more than 1 waypoint is stored in waypoints (type vector)
 		if (waypoints.size() != 0) {
 			if (distanciaAoDestino < 10) {
 				if (isBordejando) {
@@ -358,21 +364,23 @@ void loop() {
 					nextLocation = waypoints.at(waypointId);
 				}
 			}
-			
+			// if no desired course is set (this defined by using controle)
 			if (controle == 0) {
 				lastLocation = currentLocation;
 				distanciaInicial = calcular_distancia(startLocation, nextLocation);
 				controle = 1;
 			}
-			
+			//calculates the course and finds the direction(angle) that you must travel 
 			sp = calcular_orientacao(currentLocation, nextLocation);
 
 			lastDistanciaDestino = distanciaAoDestino;
+			// distance to destination
 			distanciaAoDestino = calcular_distancia(currentLocation, nextLocation);
+			//total travelled distance
 			distanciaPercorrida += calcular_distancia(lastLocation, currentLocation);
 
-// refer to control_leme 
-// this function controls the rudder 
+			// refer to control_leme 
+			// this function controls the rudder 
 			controle_rudder();
 			
 			// caso o veleiro não esteja avançando ao destino. solução: selecionar outro waypoint
@@ -391,23 +399,25 @@ void loop() {
 		if((tempo - start) > 20000){
 			distanciaAoDestino = 0;
 		}
-
+			// calculates wind direction from the wind vane 
 			biruta = wind_dir();
-			
+			// wind drirection is read, waypoint not reached, and error is within 5 
 			if (abs(biruta) < 30 && !isBordejando && abs(erroAtual) < 5) {
 				isBordejando = true;
+				// stores bordejar ( which does __) into points_bordejar
 				pontos_bordejar = bordejar(&lastLocation, &nextLocation);
 			}
 		}
 		lastLocation = currentLocation;
 		//update_ position
 		atualizar_posicao(currentLocation);
+		// update heading from the compass 
 		heading = dir_bussola();
 		// save_data()
 		salvar_dados();
 	}
 }
-
+    // send_check_database
 void enviar_dados_estacaobase(){
 	Serial.print('i');
 	Serial.print(currentLocation.latitude, 6);
@@ -426,7 +436,7 @@ void enviar_dados_estacaobase(){
 	Serial.print((int)distanciaInicial+1000);
 	Serial.print('f');
 }
-
+ // save_data 
 void salvar_dados(){
 	dataFile = SD.open("testecom.txt", FILE_WRITE);
 	if (dataFile) {

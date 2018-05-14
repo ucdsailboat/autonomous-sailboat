@@ -41,7 +41,9 @@ int saturador_atuador_cor(float sensor) {
 // control rudder
 // called once in the sailboatMainCode_2017 line: 353 
 void controle_rudder() {
+  // sp - angle that the sailboat needs to travel to reach waypoint
   sp = saturador(sp);
+  // heading - actual angle found from the compass 
   erroAtual = sp - heading;
   // to make sure the angles do not pass 
   erroAtual = saturador(erroAtual);
@@ -52,6 +54,8 @@ void controle_rudder() {
 
   //from his rudder control laws 
   angulo_rudder = 90 * (erroAtual/180);
+
+  // error = desired angle - actual angle 
   erroAtual = angulo_rudder;
 
   // apply PI theory 

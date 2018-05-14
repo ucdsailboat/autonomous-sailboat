@@ -25,6 +25,7 @@ float dir_bussola(){
  //  heading = -heading;
   heading = heading - norte_quadr_buss;
   heading = saturador(heading);
+  // soma -> sum 
   soma += heading;
   }
 
