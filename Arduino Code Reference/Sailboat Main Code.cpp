@@ -123,11 +123,12 @@ int contador_bug = 0; // counter
 // borderjar - following wind direction
 vector<location> bordejar(struct location *atual, struct location *destino)
 {
+
 	// bordejo - noun version 
 	// holds the points 
 	vector<location> pontos_bordejo;
 
-// biruta - sail 
+// biruta - wind direction from the wind vane (in dgs)
 	float heeling = biruta + heading;
 	heeling = saturador(heeling);
 	
@@ -138,34 +139,47 @@ vector<location> bordejar(struct location *atual, struct location *destino)
 	float x = destino->latitude;
 	float y = destino->longitude;
 
-//  distance_following wind direction = rate_dist * distanceInitial
+//  distance_following wind direction = rate_dist (value = 0.2) * distanceInitial
 	float distancia_bordejar = taxa_dist * distanciaInicial;
 
 // calculates the path between the start and the destination point
+	// a_A - slope 
 	float a_A = (y - y0) / (x - x0); //destination - actual 
+	// point-slope form & b_A = intersect
 	float b_A = y0 - (a_A * x0);
 	//float x_temp = x0;
 	//float y_temp = a_A * x_temp + b_A;
 
+	//calculation for a specific case 
+	// heeling (heading and biruta) must be greater than heading
 	if (heeling - heading < 0){
+		// 60 = -60
 		 angulo_bordejo = -angulo_bordejo;
 	}
 
 	//float thetaAB = abs(saturador(biruta)) - angulo_bordejo;
+	// slope of the line is set to 60
 	float thetaAB = angulo_bordejo;
 	thetaAB = saturador(thetaAB);
 	
 	//encontra a reta B tal que thetaAB = 45º - biruta e a interseção seja o ponto inicial
 	//find the line B such that thetaAB = 45 degress - wind vane and the intersection are at the initial point 
+	// find the path that you are going 45 degrees (ideal case?)
+	// changes degrees to radians 
 	float tan_thetaAB = (float)tan((thetaAB) * (PI / 180));
+	// A - first point
+	// B - second point 
+	// calculates the angle between the two points (A & B)
 	float a_B = (a_A - tan_thetaAB) / (tan_thetaAB * a_A + 1);
-
+    // 
 	float b_B = y0 - (a_B * x0);
 
 	//initialization of auxiliary variables 
 	float d = distanciaInicial;
 	float d_p0 = 9999999;
 
+// x - destination latitude
+// y - destination longitude 
 	float latBord = x;
 	float lonBord = y;
 
@@ -395,7 +409,7 @@ void loop() {
 			}
 
 			tempo = millis();
-
+		// after 20000 milliseconds (20 seconds), set the distance to 0 
 		if((tempo - start) > 20000){
 			distanciaAoDestino = 0;
 		}
