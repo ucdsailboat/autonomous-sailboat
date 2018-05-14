@@ -1,60 +1,58 @@
-//Anemometer loop is currently in the GPS timer loops that displays every 2000ms 
+/* Anemometer and GPS Combined Code - Modified 5/13 M. Shi  
+ * Anemometer loop is currently in the GPS timer loops that displays every 500ms (set in display_timer variable)
+ * Anemometer readings averaged every 3000ms (set in WindSpeedInterval variable)
+*/ 
 
-int i=0;
-//Anemometer libraries 
+// Anemometer libraries 
 #include <math.h>  
 
-//GPS libraries 
+// GPS libraries 
 #include <Adafruit_GPS.h>
 #include <SoftwareSerial.h>
 
-
-
-//Anemometer Setup
-#define Offset 0;         // offset from true magnetic north if global heading desired 
+// Anemometer Wind Direction Init  
 #define WindSensorPin (2) // The pin location of the anemometer sensor 
-int VaneValue;            // raw analog value from wind vane 
-int Direction;            // translated 0 - 360 direction 
-int CalDirection;         // converted value with offset applied z
+int VaneValue;            // raw analog value from wind vane
+int CalDirection;         // apparent wind direction: [0,180] clockwise, [0,-179] counterclockwise, 180 is dead zone
 
 // Anemometer Wind Speed Init 
-int Rotations;                            // displayed onto Serial Monitor 
-volatile unsigned long RotationsCounter;  // cup rotation counter used in interrupt routine 
-volatile unsigned long ContactBounceTime; // Timer to avoid contact bounce in interrupt routine 
-float WindSpeed;                          // speed knots 
+float WindSpeed;                          // apparent wind speed in knots 
 double T = 3.0;                           // time in seconds needed to average readings
 unsigned long WindSpeedInterval = T*1000; // time in milliseconds needed to average anemometer readings 
 unsigned long previousMillis = 0;         // millis() returns an unsigned long
-
-// Anemometer Wind Direction Prototyping
-void getHeading(int direction);       // defines ranges for compass rose
+volatile unsigned long RotationsCounter;  // cup rotation counter used in interrupt routine 
+volatile unsigned long ContactBounceTime; // timer to avoid contact bounce in interrupt routine 
 
 //GPS Init
+float display_timer = 500;          // GPS timer loop in milliseconds for displaying data 
+int i=0;                            // increment counter for GPS.fix function
 #define GPSECHO  true               //Set GPSECHO to 'false' to turn off echoing the raw GPS data to the Serial console
-// If using software serial, keep this line enabled
+// If using software serial, keep this line enabled 
 // (you can change the pin numbers to match your wiring):
 SoftwareSerial mySerial(3,2);       //3,2 originally
-
-// If using hardware serial (e.g. Arduino Mega), comment out the
-// above SoftwareSerial line, and enable this line instead
-// (you can change the Serial number to match your wiring):
-//HardwareSerial mySerial = Serial1;
 
 Adafruit_GPS GPS(&mySerial);
 uint32_t timer = millis();
 boolean usingInterrupt=false;
-void useInterrupt(boolean);       //GPS prototyping
+      
+// Anemometer Wind Direction Prototyping
+int getWindDirection(int VaneValue);      // faulty anemometer requires nonlinear equations for calibration
+
+// GPS Prototyping
+SIGNAL(TIMER0_COMPA_vect);      // Interrupt is called once a millisecond, looks for any new GPS data, and stores it
+void useInterrupt(boolean);     //GPS interrupt
 
 void setup() {
   Serial.begin(115200); // min baud rate for GPS is 115200 so may have to adjust 
-
+  
   // Anemometer Wind Direction Setup
   pinMode(WindSensorPin, INPUT); 
+  
+  // Anemometer Wind Speed Setup 
   attachInterrupt(digitalPinToInterrupt(WindSensorPin), isr_rotation, FALLING); 
   sei(); // Enables interrupts 
-  Serial.println("Vane Value\tDirection\tHeading\t\tRotations\tKnots\tSail Servo Angle"); 
-
-  //GPS setup
+  
+  //GPS Setup
   GPS.begin(9600);
   // uncomment this line to turn on RMC (recommended minimum) and GGA (fix data) including altitude
   GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
@@ -76,8 +74,6 @@ void setup() {
   // loop code a heck of a lot easier!
   useInterrupt(true);
  
-
-  delay(1000);
   // Ask for firmware version
   mySerial.println(PMTK_Q_RELEASE);
 }
@@ -108,111 +104,71 @@ void loop() {
   // if millis() or timer wraps around, we'll just reset it
   if (timer > millis())  timer = millis();
 
-  // approximately every 2 seconds or so, print out the current stats
-  if (millis() - timer > 2000) { 
+  // approximately every 500 milliseconds (set in display_timer), print out the current stats
+  if (millis() - timer > display_timer) { 
     timer = millis(); // reset the timer
-      //Anemometer Loop
-  VaneValue = analogRead(A4); 
-  Direction = map(VaneValue, 0, 1023, 0, 360); 
-  CalDirection = Direction + Offset; 
-
-  if(CalDirection > 360) 
-  CalDirection = CalDirection - 360; 
-
-  if(CalDirection < 0) 
-  CalDirection = CalDirection + 360; 
- 
-  //Wind speed
-  unsigned long currentMillis = millis(); // current run time
-  if ((unsigned long)(currentMillis - previousMillis) >= WindSpeedInterval){  // calculate wind speed after 3 seconds 
-    // convert to knots using the formula V = P(2.25/T) / 1.15078 
-    Rotations = RotationsCounter;                
-    WindSpeed = RotationsCounter*2.25/T/1.15078;
-    RotationsCounter = 0;         // Set Rotations count to 0 ready for calculations 
-    previousMillis = millis();
-    }
-  
+    
+    // Anemometer Wind Direction Loop
+    VaneValue = analogRead(A4); 
+    CalDirection = getWindDirection(VaneValue);
+     
+    if(CalDirection < -179)         // curve fit has values less than -179 
+    CalDirection = -179; 
+     
+    // Anemometer Wind Speed Loop 
+    unsigned long currentMillis = millis(); // current run time
+    if ((unsigned long)(currentMillis - previousMillis) >= WindSpeedInterval){  // calculate wind speed after 3 seconds 
+      // convert to knots using the formula V = P(2.25/T) / 1.15078 
+      WindSpeed = RotationsCounter*2.25/T/1.15078;
+      RotationsCounter = 0;                 // reset RotationsCounter after averaging  
+      previousMillis = millis();
+      }
+    
     //Serial.print(VaneValue); Serial.print(",");
     Serial.print(CalDirection); Serial.print(" "); 
-    getHeading(CalDirection); Serial.print(","); 
-    //Serial.print(Rotations); Serial.print(","); 
     Serial.print(WindSpeed); Serial.print(",");
-
-    /*
-    Serial.print("\nTime: ");
-    Serial.print(GPS.hour, DEC); Serial.print(':');
-    Serial.print(GPS.minute, DEC); Serial.print(':');
-    Serial.print(GPS.seconds, DEC); Serial.print('.');
-    Serial.println(GPS.milliseconds);
-    Serial.print("Date: ");
-    Serial.print(GPS.day, DEC); Serial.print('/');
-    Serial.print(GPS.month, DEC); Serial.print("/20");
-    Serial.println(GPS.year, DEC);
-    Serial.print("Fix: "); Serial.print((int)GPS.fix);
-    Serial.print(" quality: "); Serial.println((int)GPS.fixquality); 
-    */
+    
     if (!(GPS.fix)){
       Serial.print(0.00000000, 8);     //These still work with Google Maps
       Serial.print(","); 
       Serial.print(0.0000000000, 8);
       Serial.print(","); 
-      Serial.println (i, 8);
+      Serial.println(GPS.speed);        //knots
       i++;
     }
-    if (GPS.fix) {
-      //Serial.print("Location: ");
-      //Serial.print(GPS.latitude, 4); Serial.print(GPS.lat);
-      //Serial.print(","); 
-      //Serial.print(GPS.longitude, 4); Serial.println(GPS.lon);
-      //Serial.print("Location (in degrees, works with Google Maps): ");
-      
+    if (GPS.fix) { 
       Serial.print(GPS.latitudeDegrees, 8);     //These still work with Google Maps
       Serial.print(","); 
-      Serial.print (GPS.longitudeDegrees, 8);
+      Serial.print(GPS.longitudeDegrees, 8);
       Serial.print(","); 
-      Serial.println (i, 8);
-      i++;
-      //Serial.print(","); 
-      //Serial.print(GPS.speed);        //knots
-      //Serial.print(","); 
-      //Serial.print(GPS.angle);
-      //Serial.print("Altitude: "); 
-      //Serial.print(GPS.altitude);
-      //Serial.print(","); 
-      //Serial.println((int)GPS.satellites);
+      Serial.println(GPS.speed);                //knots
+      i++; 
     }
   }
 
 }
 
-void isr_rotation () { //For anemometer
-  if ((millis() - ContactBounceTime) > 15 ) { // debounce the switch contact. 
-    RotationsCounter++; 
-    ContactBounceTime = millis(); 
+// Anemometer Function Definitions 
+// function that the interrupt calls to increment the rotation count 
+void isr_rotation () { 
+if ((millis() - ContactBounceTime) > 15 ) { // debounce the switch contact.
+  RotationsCounter++; 
+  ContactBounceTime = millis(); 
   }
+  }
+
+// potentiometer values mapped to [-179,180], curve fit from data
+int getWindDirection(int VaneValue){     
+  if (VaneValue <= 1023 && VaneValue > 683){  // [0,180] degrees
+    return round(0.5227*VaneValue - 354.42);  
+  }
+  else if (VaneValue < 683 && VaneValue >= 0){  // [-179,0] degrees
+    return round(0.0004*VaneValue*VaneValue - 0.0005*VaneValue - 188.4);
+  } 
+  else return 0; 
 }
 
-void getHeading(int direction) { //For anemometer
-  if(direction < 22) 
-    Serial.print("N"); 
-  else if (direction < 67) 
-    Serial.print("NE"); 
-  else if (direction < 112) 
-    Serial.print("E"); 
-  else if (direction < 157) 
-    Serial.print("SE"); 
-  else if (direction < 212) 
-   Serial.print("S"); 
-  else if (direction < 247) 
-   Serial.print("SW"); 
-  else if (direction < 292) 
-    Serial.print("W"); 
-  else if (direction < 337) 
-    Serial.print("NW"); 
-  else 
-    Serial.print("N"); 
-}
-
+// GPS Function Definitions 
 SIGNAL(TIMER0_COMPA_vect) { // Interrupt is called once a millisecond, looks for any new GPS data, and stores it
   char c = GPS.read();
   // if you want to debug, this is a good time to do it!
@@ -237,3 +193,35 @@ void useInterrupt(boolean v) { //GPS interrupt
     usingInterrupt = false;
   }
 }
+
+
+/* Notes: Extra GPS Printing Commands 
+    Serial.print("\nTime: ");
+    Serial.print(GPS.hour, DEC); Serial.print(':');
+    Serial.print(GPS.minute, DEC); Serial.print(':');
+    Serial.print(GPS.seconds, DEC); Serial.print('.');
+    Serial.println(GPS.milliseconds);
+    Serial.print("Date: ");
+    Serial.print(GPS.day, DEC); Serial.print('/');
+    Serial.print(GPS.month, DEC); Serial.print("/20");
+    Serial.println(GPS.year, DEC);
+    Serial.print("Fix: "); Serial.print((int)GPS.fix);
+    Serial.print(" quality: "); Serial.println((int)GPS.fixquality); 
+
+    if GPS.fix is true
+    //Serial.print("Location: ");
+    //Serial.print(GPS.latitude, 4); Serial.print(GPS.lat);
+    //Serial.print(","); 
+    //Serial.print(GPS.longitude, 4); Serial.println(GPS.lon);
+    //Serial.print("Location (in degrees, works with Google Maps): ");
+
+    //Serial.print(","); 
+    //Serial.print(GPS.speed);        //knots
+    //Serial.print(","); 
+    //Serial.print(GPS.angle);
+    //Serial.print("Altitude: "); 
+    //Serial.print(GPS.altitude);
+    //Serial.print(","); 
+    //Serial.println((int)GPS.satellites);
+    */
+  
