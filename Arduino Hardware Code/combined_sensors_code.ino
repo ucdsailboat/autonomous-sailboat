@@ -7,40 +7,41 @@
 #include <math.h>  
 
 // GPS libraries 
-#include <Adafruit_GPS.h>
+#include <TinyGPS++.h>
 #include <SoftwareSerial.h>
 
-// Anemometer Wind Direction Init  
+// Anemometer Wind Direction Initialization
 #define WindSensorPin (2) // The pin location of the anemometer sensor 
 int VaneValue;            // raw analog value from wind vane
 int CalDirection;         // apparent wind direction: [0,180] clockwise, [0,-179] counterclockwise, 180 is dead zone
 
-// Anemometer Wind Speed Init 
+// Anemometer Wind Speed Initialization
 float WindSpeed;                          // apparent wind speed in knots 
 double T = 3.0;                           // time in seconds needed to average readings
 unsigned long WindSpeedInterval = T*1000; // time in milliseconds needed to average anemometer readings 
 unsigned long previousMillis = 0;         // millis() returns an unsigned long
 volatile unsigned long RotationsCounter;  // cup rotation counter used in interrupt routine 
 volatile unsigned long ContactBounceTime; // timer to avoid contact bounce in interrupt routine 
-
-//GPS Init
-float display_timer = 500;          // GPS timer loop in milliseconds for displaying data 
-int i=0;                            // increment counter for GPS.fix function
-#define GPSECHO  true               //Set GPSECHO to 'false' to turn off echoing the raw GPS data to the Serial console
-// If using software serial, keep this line enabled 
-// (you can change the pin numbers to match your wiring):
-SoftwareSerial mySerial(3,2);       //3,2 originally
-
-Adafruit_GPS GPS(&mySerial);
 uint32_t timer = millis();
-boolean usingInterrupt=false;
-      
-// Anemometer Wind Direction Prototyping
+
+//GPS Initialization
+TinyGPSPlus tinyGPS; // Create a TinyGPS object
+#define GPS_BAUD 9600 // GPS module baud rate
+float display_timer = 500; // GPS timer loop in milliseconds for displaying data (remove)
+
+  // Set gpsPort to either ssGPS if using SoftwareSerial or Serial1 if using an
+  // Arduino with a dedicated hardware serial port
+#define gpsPort Serial1
+
+// Define the serial monitor port. On the Uno, and Leonardo this is 'Serial'
+//  on other boards this may be 'SerialUSB'
+//#define SerialMonitor Serial
+
+// Anemometer Wind Direction Prototypes
 int getWindDirection(int VaneValue);      // faulty anemometer requires nonlinear equations for calibration
 
-// GPS Prototyping
-SIGNAL(TIMER0_COMPA_vect);      // Interrupt is called once a millisecond, looks for any new GPS data, and stores it
-void useInterrupt(boolean);     //GPS interrupt
+// GPS Prototypes
+void printGPSInfo(void);
 
 void setup() {
   Serial.begin(9600); // min baud rate for GPS is 115200 so may have to adjust 
@@ -49,57 +50,17 @@ void setup() {
   pinMode(WindSensorPin, INPUT); 
   
   // Anemometer Wind Speed Setup 
-  attachInterrupt(digitalPinToInterrupt(WindSensorPin), isr_rotation, FALLING); 
+  attachInterrupt(0, isr_rotation, FALLING); 
   sei(); // Enables interrupts 
   
   //GPS Setup
-  GPS.begin(9600);
-  // uncomment this line to turn on RMC (recommended minimum) and GGA (fix data) including altitude
-  GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCGGA);
-  // uncomment this line to turn on only the "minimum recommended" data
-  //GPS.sendCommand(PMTK_SET_NMEA_OUTPUT_RMCONLY);
-  // For parsing data, we don't suggest using anything but either RMC only or RMC+GGA since
-  // the parser doesn't care about other sentences at this time
-  
-  // Set the update rate
-  GPS.sendCommand(PMTK_SET_NMEA_UPDATE_1HZ);   // 1 Hz update rate
-  // For the parsing code to work nicely and have time to sort thru the data, and
-  // print it out we don't suggest using anything higher than 1 Hz
-
-  // Request updates on antenna status, comment out to keep quiet
-  GPS.sendCommand(PGCMD_ANTENNA);
-
-  // the nice thing about this code is you can have a timer0 interrupt go off
-  // every 1 millisecond, and read data from the GPS for you. that makes the
-  // loop code a heck of a lot easier!
-  useInterrupt(true);
- 
-  // Ask for firmware version
-  mySerial.println(PMTK_Q_RELEASE);
+  gpsPort.begin(GPS_BAUD); // GPS_BAUD currently set to 9600
 }
 
 void loop() {
  
-  //GPS Loop
-      // in case you are not using the interrupt above, you'll
-  // need to 'hand query' the GPS, not suggested :(
-  if (! usingInterrupt) {
-    // read data from the GPS in the 'main loop'
-    char c = GPS.read();
-    // if you want to debug, this is a good time to do it!
-    if (GPSECHO)
-      if (c) Serial.print(c);
-  }
-  
-  // if a sentence is received, we can check the checksum, parse it...
-  if (GPS.newNMEAreceived()) {
-    // a tricky thing here is if we print the NMEA sentence, or data
-    // we end up not listening and catching other sentences! 
-    // so be very wary if using OUTPUT_ALLDATA and trytng to print out data
-  
-    if (!GPS.parse(GPS.lastNMEA()))   // this also sets the newNMEAreceived() flag to false
-      return;  // we can fail to parse a sentence in which case we should just wait for another
-  }
+  //GPS Loop  
+  printGPSInfo(); // print position, altitude, speed
 
   // if millis() or timer wraps around, we'll just reset it
   if (timer > millis())  timer = millis();
@@ -126,25 +87,10 @@ void loop() {
     
     //Serial.print(VaneValue); Serial.print(",");
     Serial.print(CalDirection); Serial.print(","); 
-    Serial.print(WindSpeed); Serial.print(",");
-    
-    if (!(GPS.fix)){
-      Serial.print(0.00000000, 8);     //These still work with Google Maps
-      Serial.print(","); 
-      Serial.print(0.0000000000, 8);
-      Serial.print(","); 
-      Serial.println(0.0000,4);        //knots
-      i++;
-    }
-    if (GPS.fix) { 
-      Serial.print(GPS.latitudeDegrees, 8);     //These still work with Google Maps
-      Serial.print(","); 
-      Serial.print(GPS.longitudeDegrees, 8);
-      Serial.print(","); 
-      Serial.println(GPS.speed,4);                //knots
-      i++; 
-    }
+    Serial.println(WindSpeed); // last output!   
   }
+
+  smartDelay(1000); // "Smart delay" looks for GPS data while the Arduino's not doing anything else
 
 }
 
@@ -168,60 +114,27 @@ int getWindDirection(int VaneValue){
   else return 0; 
 }
 
-// GPS Function Definitions 
-SIGNAL(TIMER0_COMPA_vect) { // Interrupt is called once a millisecond, looks for any new GPS data, and stores it
-  char c = GPS.read();
-  // if you want to debug, this is a good time to do it!
-#ifdef UDR0
-  if (GPSECHO)
-    if (c) UDR0 = c;  
-    // writing direct to UDR0 is much much faster than Serial.print 
-    // but only one character can be written at a time. 
-#endif
+// GPS Function Definitions
+void printGPSInfo()
+{
+  // Print latitude, longitude, speed
+  Serial.print(tinyGPS.location.lat(), 6); Serial.print(","); 
+  Serial.print(tinyGPS.location.lng(), 6); Serial.print(","); 
+  Serial.print(tinyGPS.speed.mph()); Serial.print(","); 
 }
 
-void useInterrupt(boolean v) { //GPS interrupt
-  if (v) {
-    // Timer0 is already used for millis() - we'll just interrupt somewhere
-    // in the middle and call the "Compare A" function above
-    OCR0A = 0xAF;
-    TIMSK0 |= _BV(OCIE0A);
-    usingInterrupt = true;
-  } else {
-    // do not call the interrupt function COMPA anymore
-    TIMSK0 &= ~_BV(OCIE0A);
-    usingInterrupt = false;
-  }
+// This custom version of delay() ensures that the tinyGPS object
+// is being "fed". From the TinyGPS++ examples.
+static void smartDelay(unsigned long ms)
+{
+  unsigned long start = millis();
+  do
+  {
+    // If data has come in from the GPS module
+    while (gpsPort.available())
+      tinyGPS.encode(gpsPort.read()); // Send it to the encode function
+    // tinyGPS.encode(char) continues to "load" the tinGPS object with new
+    // data coming in from the GPS module. As full NMEA strings begin to come in
+    // the tinyGPS library will be able to start parsing them for pertinent info
+  } while (millis() - start < ms);
 }
-
-
-/* Notes: Extra GPS Printing Commands 
-    Serial.print("\nTime: ");
-    Serial.print(GPS.hour, DEC); Serial.print(':');
-    Serial.print(GPS.minute, DEC); Serial.print(':');
-    Serial.print(GPS.seconds, DEC); Serial.print('.');
-    Serial.println(GPS.milliseconds);
-    Serial.print("Date: ");
-    Serial.print(GPS.day, DEC); Serial.print('/');
-    Serial.print(GPS.month, DEC); Serial.print("/20");
-    Serial.println(GPS.year, DEC);
-    Serial.print("Fix: "); Serial.print((int)GPS.fix);
-    Serial.print(" quality: "); Serial.println((int)GPS.fixquality); 
-
-    if GPS.fix is true
-    //Serial.print("Location: ");
-    //Serial.print(GPS.latitude, 4); Serial.print(GPS.lat);
-    //Serial.print(","); 
-    //Serial.print(GPS.longitude, 4); Serial.println(GPS.lon);
-    //Serial.print("Location (in degrees, works with Google Maps): ");
-
-    //Serial.print(","); 
-    //Serial.print(GPS.speed);        //knots
-    //Serial.print(","); 
-    //Serial.print(GPS.angle);
-    //Serial.print("Altitude: "); 
-    //Serial.print(GPS.altitude);
-    //Serial.print(","); 
-    //Serial.println((int)GPS.satellites);
-    */
-  
