@@ -64,7 +64,7 @@ void setup() {
   pinMode(WindSensorPin, INPUT); 
   
   // Anemometer Wind Speed Setup 
-  attachInterrupt(digitalPinToInterrupt(WindSensorPin), isr_rotation, FALLING); 
+  attachInterrupt(0, isr_rotation, FALLING); 
   sei(); // Enables interrupts 
   
   //GPS Setup
