@@ -9,7 +9,7 @@ Inputs: desiredPath - angle that the bsailboat needs to travel to reach the wayp
 Outputs: angle_rudder - angle of the rudder (type float)
 
 
-Jordan Leung 5/4/18
+Jordan Leung 5/15/18
 */
 
 
