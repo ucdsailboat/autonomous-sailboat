@@ -24,8 +24,8 @@ Jordan Leung 5/15/18
 #include <math.h>
 
 // define rudder negative and positive limits 
-float rudder_pos = 90;
-float rudder_neg = -90; 
+float rudder_pos = 45;
+float rudder_neg = -45; 
 
 //initialize PID variables
 
