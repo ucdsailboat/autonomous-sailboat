@@ -73,7 +73,7 @@ void loop() {
   // Anemometer Wind Speed Loop 
   unsigned long currentMillis = millis(); // current run time
   if ((unsigned long)(currentMillis - previousMillis) >= WindSpeedInterval){  // calculate wind speed after 3 seconds 
-    // convert to knots using the formula V = P(2.25/T) / 1.15078 
+    // converts from mph to knots (1 knot = 1.15078 mph) using the formula V = P(2.25/T) / 1.15078 
     WindSpeed = RotationsCounter*2.25/T/1.15078;
     RotationsCounter = 0;                 // reset RotationsCounter after averaging  
     previousMillis = millis();
