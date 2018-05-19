@@ -3,7 +3,7 @@ Description: The rudder controller is responsible for adjusting the boat orienta
 with respect to the defined trajectory. The directions of the compass and the desired path 
 are compared 
 
-Inputs: desiredPath - angle that the sailboat needs to travel to reach the waypoint
+Inputs: desiredPath - angle that the bsailboat needs to travel to reach the waypoint
 		heading - actual direction (angle) found via compass
 
 Outputs: angle_rudder - angle of the rudder (type float)
@@ -81,11 +81,11 @@ float rudder_controller(float desiredPath, float heading) {
 	control_act = P() + I();
 	// turning the boat in the clockwise direction 
 	if (errorActual > 0) {
-		angle_rudder = rudder_pos/2 + (rudder_pos - rudder_pos/2)*(control_act/180);
+		angle_rudder = (rudder_pos)*(control_act/180);
 	}
 	// turning the boat in the counterclockwise direction
 	else {
-		angle_rudder = rudder_pos/2 + (rudder_neg - rudder_pos/2)*(control_act/180);
+		angle_rudder = (rudder_neg)*(control_act/180);
 	}
 
 	angle_rudder = saturator_rudder(angle_rudder);
