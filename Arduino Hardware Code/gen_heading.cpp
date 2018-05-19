@@ -1,11 +1,18 @@
-// Generates current heading of the boat, within the constraints of
+// generates current heading of the boat, within the constraints of
 // [-180, 180] degrees. 
-/* 
-Input: float event.magnetic.y, float event.magnetic.x
-Output: float heading [degrees] 
-*/
-// Written by Bryan Z. 5/18/18
+//
+// input: float event.magnetic.y, float event.magnetic.x
+// output: float heading [degrees] 
+//
+// written by Bryan Z. 5/18/18
 
+// before void setup() in main code, the following is needed:
+//  Adafruit_LSM303_Mag_Unified mag = Adafruit_LSM303_Mag_Unified(12345);
+// in the void loop():
+//  sensors_event_t event; 
+//  mag.getEvent(&event);
+
+// generates current heading in global coordinates
 float gen_heading(float mag_x, float mag_y){
   // convert Gauss units (microteslas) to current compass heading, without tilt compensation
   float currHeading = (atan2(mag_y,mag_x) * 180) / PI; //
