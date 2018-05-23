@@ -62,7 +62,7 @@ float rudder_neg = -45;     // negative rudder limit
 float errorActual = 0;      // error = desired angle - actual angle 
 float Iaccum = 0;           // accummulator of integrative error.
 float Kp = 2;               // proportional gain - starting value suggested by Davi
-float Ki = 1;               // integral gain - starting value suggsted by Davi
+float Ki = .005;               // integral gain - starting value suggsted by Davi
 float control_act = 0;      // initialize control action (P + I)
 float heading=0;            // actual angle/direction
 float angle_rudder = 0;     // angle of the rudder commanded 
@@ -183,7 +183,7 @@ void loop() {
     if ( desiredAngle == againstWindAngle)      desiredAngle = 180;                  //CW turn to go with the wind
     else if(desiredAngle == 180)                desiredAngle = -againstWindAngle;    //CW turn to go -45 against the wind
     else if (desiredAngle == -againstWindAngle) desiredAngle = -180;                 //CCW turn to go with the wind
-    else if(desiredAngle == 180)                desiredAngle = againstWindAngle;     //CW turn to go 45 against the wind 
+    else if(desiredAngle == -180)                desiredAngle = againstWindAngle;     //CW turn to go 45 against the wind 
 
     //Prep to turn
     previousMillisTurning=millis();
@@ -293,10 +293,10 @@ float rudder_controller(float desiredPath, float heading) {
   control_act = P() + I();                        //PI control
    
   if (errorActual > 0) {                          //turning the boat in the cw direction
-    angle_rudder = rudder_pos/2 + (rudder_pos - rudder_pos/2)*(control_act/180); //22.5+(22.5)*control_act/2
+    angle_rudder = (rudder_pos)*(control_act/180);
   }
   else {                                          //turning the boat in the ccw direction
-    angle_rudder = rudder_pos/2 + (rudder_neg - rudder_pos/2)*(control_act/180);//22.5-(45+22.5)*control_act/2
+    angle_rudder = (rudder_neg)*(control_act/180);
   }
 
   angle_rudder = saturator_rudder(angle_rudder);
