@@ -61,7 +61,7 @@ float Ki = 0.001;       // integral gain - starting value suggsted by Davi
 // desired path/direction
 float desiredPath;
 float currHeading;  // current actual angle/direction in degrees
-float debugHeading
+float debugHeading;
 
 // data storage variables
 float velocity; // abs. vel of boat [km/h -> NEEDS TO BE CHANGED]
@@ -75,19 +75,21 @@ struct location {
 
 location currentLocation, targetLocation; // define structs with gps coordinates
 
+vector<location> waypoints; // vector that holds all the different waypoints 
 
 void setup() {
   Serial.begin(115200);
-  Serial1.begin(115200);
-  // ss.begin(9600);
+  gpsPort.begin(115200);
+
   // define target location (chosen from google earth pro)
   targetLocation.latitude = 38.538967; // barony pl. cul de sac
   targetLocation.longitude = -121.722087;
   // Rudder Servo Setup
   servoRudder.attach(6); // attach pin for the rudder servo
   servoRudder.write(rudOffset); // sets initial servo position 
-  currentLocation.latitude = 38.5836664;
-  currentLocation.longitude = -121.72179470;
+  // For testing purposes (Brisa House)
+  //currentLocation.latitude = 38.5836664;
+  //currentLocation.longitude = -121.72179470;
   /* Initialise the magentometer sensor */
   if(!mag.begin())
   {
@@ -103,8 +105,8 @@ void loop() {
   mag.getEvent(&magEvent);
   currHeading = gen_heading(magEvent.magnetic.x, magEvent.magnetic.y);
   debugHeading = debug_heading(magEvent.magnetic.x, magEvent.magnetic.y); // for debugging, 0-360 deg from North
-  //update current location 
-  //update_position(currentLocation);
+  //update current location, number 1 will update currentLocation 
+  update_position(currentLocation, 1);
   //gps.f_get_position(&currentLocation.latitude, &currentLocation.longitude);
   // obtain desired direction by calculating path to the waypoint
   desiredPath = calculate_orientation(currentLocation, targetLocation);
@@ -114,7 +116,7 @@ void loop() {
   
   
   /* for testing purposes */
-  float f_lat, f_lon;
+  //float f_lat, f_lon;
   Serial.print("Latitude: "); Serial.print(currentLocation.latitude);
   Serial.print(" Longitude: "); Serial.println(currentLocation.longitude);
   Serial.print("desiredPath Angle: "); Serial.print(desiredPath); 
@@ -123,6 +125,7 @@ void loop() {
   // smartdelay(500); // for GPS
   //gps.f_get_position(&f_lat, &f_lon);
   //Serial.print("f_lat = "); Serial.println(f_lat);
+  delay(200);
 }
 
 
@@ -218,7 +221,7 @@ float gen_heading(float mag_x, float mag_y){
 } // end of function
 
 // update the current position of your boat in GPS
-void update_position(struct location local){  // local has latitude and longitude
+void update_position(struct location local, int number){  // local has latitude and longitude
   bool newData = false; // for debugging, determine whether GPS got new data
   unsigned long startTime = millis(); // start the clock
   unsigned long delayThresh = 300; // delay threshold [ms]
@@ -226,21 +229,25 @@ void update_position(struct location local){  // local has latitude and longitud
   do
   {
     // while(ss.available()) // get number of bytes (characters) available for reading from serial port
-    while(Serial.available())
+    while(gpsPort.available())
     {
       // char raw_data = ss.read(); // reads incoming serial data buffer, used from example code
       // Serial.write(c); // uncomment this line if you want to see the GPS data flowing
       // if(gps.encode(ss.read())) // feed the characters from your GPS, did a new valid sentence come in?
-      if(gps.encode(Serial.read()))
+      if(gps.encode(gpsPort.read()))
       {
         // Get the position, where latitude and longitude are variables
         // of float type, and the actual values are returned. Float types 
         // are easier to use, but result in larger and slower code. The age 
         // variable must be unsigned long type.
         gps.f_get_position(&local.latitude, &local.longitude); // set latitude and longitude of 'local' variable
-        // stores local coordinates into currentLocation coordinates
-        //currentLocation.latitude = local.latitude;
-        //currentLocation.longitude = local.longitude;
+        
+        if (number == 1) {
+          // stores local coordinates into currentLocation coordinates
+          currentLocation.latitude = local.latitude;
+          currentLocation.longitude = local.longitude;
+        }
+
         direction = gps.f_course(); // obtain the course (direction), defined in main code, for saving data
         velocity = gps.f_speed_kmph(); // obtain velocity in km/h (can change), for saving data
         newData = true; // for debugging
@@ -278,7 +285,7 @@ float calculate_orientation(struct location point_1, struct location point_2){
   unsigned long startTime = millis();
   do 
   {
-    while (ss.available()) // make sure 'Serial3' is mapped to the right serial output or rename it
+    while (gpsPort.available()) // make sure 'Serial3' is mapped to the right serial output or rename it
       gps.encode(ss.read());
   } while (millis() - startTime < ms);
 } */ // uncomment once you have software serial
