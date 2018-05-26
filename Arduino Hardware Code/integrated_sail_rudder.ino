@@ -66,7 +66,7 @@ int turnAngle = 45;              // turn angle in degrees to determine straight 
 int sDesired = 0;                // desired sail angle relative to nose, uncalibrated  
 int sZero = 60;                  // degrees required to zero sail servo in line with nose of boat
 int sLimit = 90;                 // constraint angle limit to 90 degrees for the sail, determined by max slack allowed by rope length 
-int sOffset=sZero - sDesired/12; // calculated offset from getSailOffset necessary to map servo commands to sail angle (0 to 90 relative to boat nose) 
+int sOffset;                     // calculated offset from getSailOffset necessary to map servo commands to sail angle (0 to 90 relative to boat nose) 
 int sCommand;                    // calibrated angle command in degrees to servo.write 
 int spSail;                      // set point sail angle relative to wind direction 
 
@@ -128,7 +128,7 @@ void setup() {
   
   // Sail Servo Setup
   servoS.attach(7);      // pin for the servoS control
-  servoS.write(sOffset); // initialize at zero position 
+  servoS.write(sZero); // initialize at zero position 
   
   // rudder controller --
   // define target location (chosen from google earth pro)
@@ -181,9 +181,11 @@ void loop() {
   VaneValue = analogRead(A4); 
   CalDirection = getWindDirection(VaneValue);
 
-  // Curve fit outputs less than -179, so constrain to -179
-  if(CalDirection < -179) 
-  CalDirection = -179; 
+  // Curve fit outputs maximum 174 degrees and minimum -172, so set bouds as 180 and -179
+  if (CalDirection >= 174)
+  CalDirection = 180;
+  If (CalDirection <= -172)
+  CalDirection = -179;
   
   // Anemometer Wind Speed Loop 
   unsigned long currentMillis = millis(); // current run time
