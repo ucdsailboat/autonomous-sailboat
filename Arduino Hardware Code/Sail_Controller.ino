@@ -57,7 +57,7 @@ void setup() {
 
   // Sail Servo Setup
   servoS.attach(7);      // pin for the servoS control
-  servoS.write(sZero); // initialize at zero position 
+  servoS.write(sZero);   // initialize at zero position 
   
 }
 
@@ -94,9 +94,6 @@ void loop() {
   sCommand = 140;                                 // maximum for servo
   servoS.write(sCommand);                         // command sail servo
   prevHeading = currHeading;                      // current heading becomes previous heading 
-
-  Serial.print(sCommand);
-  Serial.println(CalDirection);
   }
 
 // Servo Function definitions
@@ -110,8 +107,8 @@ int getSailServoCommand(int sDesired){
     return round(sCommand);
     }
   else {                    // for all other sail angles, return the calibrated sail angle 
-    sOffset = getSailOffset(sDesired);
-    return round(sDesired + sOffset); 
+    sCommand = getSailOffset(sDesired);
+    return round(sCommand); 
     }
 }
 
