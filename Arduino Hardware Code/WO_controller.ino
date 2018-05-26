@@ -43,7 +43,7 @@ TinyGPSPlus tinyGPS;        // Create a TinyGPS object
 #define gpsPort Serial1
 
 //Wind Optimization Initialization 
-float origin[2] = {38.562858, -121.765901};   //GPS coordinates of origin (latitude, longitude) sequoia apt
+float origin[2] = {38.538689, -121.721827};   //GPS coordinates of origin (latitude, longitude) sequoia apt
 //float curLocation[2]={origin[0],origin[1]};   //GPS coordinates of current location
 //float earthR= 6378100;      //m
 //float a;                    //used for calculating haversine angle
