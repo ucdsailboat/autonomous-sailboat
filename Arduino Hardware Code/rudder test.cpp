@@ -175,7 +175,7 @@ float rudder_controller(float desiredPath, float heading) {
   }*/
 
   angle = saturator_rudder(angle);
-  
+  return angle;
 }
 
 // proportional control
