@@ -1,4 +1,4 @@
-/* Sail Controller - Modified 5/18 M.S. 
+/* Sail Controller - Modified 5/26 M.S. 
  *  Autonomous sail control using anemometer and servo
  *  Connections: 
  *  Anemometer: A4 for Wind Direction, Pin 2 for Wind Speed
@@ -15,12 +15,12 @@
 int currHeading = 0;          // current heading relative to boat (0 to 180 clockwise, 0 to -179 counterclockwise)
 int prevHeading = 0;          // previous heading relative to boat 
 
-// Anemometer Wind Direction Init  
+// anemometer wind speed
 #define WindSensorPin (2) // The pin location of the anemometer sensor 
 int VaneValue;            // raw analog value from wind vane
 int CalDirection;         // apparent wind direction: [0,180] clockwise, [0,-179] counterclockwise, 180 is dead zone
 
-// Anemometer Wind Speed Init 
+// anemometer wind direction 
 float WindSpeed;                          // apparent wind speed in knots 
 double T = 3.0;                           // time in seconds needed to average readings
 unsigned long WindSpeedInterval = T*1000; // time in milliseconds needed to average anemometer readings 
@@ -39,7 +39,7 @@ int sCommand;                    // calibrated angle command in degrees to servo
 int spSail;                      // set point sail angle relative to wind direction 
 
 // Anemometer Wind Direction Prototyping
-int getWindDirection(int VaneValue);           // faulty anemometer requires nonlinear equations for calibration
+int getWindDirection(int VaneValue);           // anemometer requires calibration using curve fit data
 
 // Sail Servo Prototyping
 int getSailOffset(int sDesired);               // 0.85*sDesired + 60; used with getSailServoCommand
@@ -66,8 +66,10 @@ void loop() {
   VaneValue = analogRead(A4); 
   CalDirection = getWindDirection(VaneValue);
 
-  // Curve fit outputs less than -179, so constrain to -179
-  if(CalDirection < -179) 
+  // Curve fit outputs maximum of 174 degrees and minimum of -172, so set bounds as 180 and -179
+  if (CalDirection >= 174)
+  CalDirection = 180; 
+  if(CalDirection <= -172) 
   CalDirection = -179; 
   
   // Anemometer Wind Speed Loop 
