@@ -57,7 +57,7 @@ void setup() {
 
   // Sail Servo Setup
   servoS.attach(7);      // pin for the servoS control
-  servoS.write(sOffset); // initialize at zero position 
+  servoS.write(sZero); // initialize at zero position 
   
 }
 
@@ -66,7 +66,7 @@ void loop() {
   VaneValue = analogRead(A4); 
   CalDirection = getWindDirection(VaneValue);
 
-  // Curve fit outputs maximum of 174 degrees and minimum of -172, so set bounds as 180 and -179
+  // Curve fit outputs maximum of 147 degrees, so set to 179
   if (CalDirection >= 174)
   CalDirection = 180; 
   if(CalDirection <= -172) 
