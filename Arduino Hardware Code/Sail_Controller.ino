@@ -119,6 +119,6 @@ if ((millis() - ContactBounceTime) > 15 ) { // debounce the switch contact.
 
 // potentiometer values mapped to [-179,180], curve fit from data
 int getWindDirection(int VaneValue){     
-  return return 0.3387*VaneValue - 172.4; ; 
+  return 0.3387*VaneValue - 172.4; ; 
 }
 
