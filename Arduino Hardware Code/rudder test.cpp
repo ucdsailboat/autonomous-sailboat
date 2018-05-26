@@ -164,25 +164,19 @@ float rudder_controller(float desiredPath, float heading) {
   // heading - actual angle found via compass
   errorActual = desiredPath - heading; 
   errorActual = saturator(errorActual);
-  Serial.print("errorActual: "); Serial.print(errorActual);
   // apply PI theory 
   controlAct = P() + I();
-  // turning the boat in the clockwise direction 
-  if (errorActual > 0) {
-    angle = rudOffset + (rudderNeg- rudOffset)*(controlAct/180);
-    Serial.println(" negative error");
-    Serial.print(" angle: "); Serial.println(angle);
+  angle = rudOffset + (rudderNeg- rudOffset)*(controlAct/180);
   }
-  // turning the boat in the counterclockwise direction
+ /* // turning the boat in the counterclockwise direction
   if (errorActual < 0) {
     angle = rudOffset + (rudderPos- rudOffset)*(controlAct/180);
     Serial.print(" positive error");
     Serial.print(" angle: "); Serial.println(angle);
-  }
+  }*/
 
   angle = saturator_rudder(angle);
-  Serial.print("saturated angle: "); Serial.println(angle);
-  return angle;
+  
 }
 
 // proportional control
