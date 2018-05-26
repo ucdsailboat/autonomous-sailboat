@@ -20,7 +20,6 @@
 
 
 
-
 //VARIABLE INITIALIZATIONS
 //Data Logging Initialization
 float display_timer = 500;                //time (ms) between printing to the serial port
@@ -75,14 +74,13 @@ Servo servoR;
 //Sail Initialization 
 int turnAngle = 45;               // turn angle in degrees to determine straight sailing or turns
 int sDesired = 45;                 // desired sail angle to maintain relative to nose, uncalibrated  
-int sZero = 30
-;                   // degrees required to zero sail servo in line with nose of boat
+int sZero = 60;                   // degrees required to zero sail servo in line with nose of boat
 int sLimit = 90;                  // constraint angle limit to 90 degrees for the sail, determined by max slack allowed by rope length 
 int sOffset=sZero - sDesired/12;  // calculated offset from getSailOffset necessary to map servo commands to sail angle (0 to 90 relative to boat nose) 
 int sCommand;                     // calibrated angle command in degrees to servo.write 
 int spSail;                       // set point sail angle relative to wind direction 
-int h1Delta = 0;                  // current heading relative to boat (0 to 180 clockwise, 0 to -179 counterclockwise)
-int h2Delta = 0;                  // previous heading relative to boat 
+int currHeading = 0;                  // current heading relative to boat (0 to 180 clockwise, 0 to -179 counterclockwise)
+int prevHeading = 0;                  // previous heading relative to boat 
 Servo servoS;  
 
  
@@ -131,7 +129,7 @@ void setup() {
 
   //Sail Setup
   servoS.attach(7);      // pin for the servoS control
-  servoS.write(sOffset); // initialize at zero position 
+  servoS.write(sZero); // initialize at zero position 
 }
 
 
@@ -156,7 +154,10 @@ void loop() {
   VaneValue = analogRead(A4); 
   CalDirection = getWindDirection(VaneValue);
    
-  if(CalDirection < -179) CalDirection = -179;                          //Curve fit has values less than -179 
+  if (CalDirection >= 174)                                              //Curve fit has values less than -179 
+  CalDirection = 180; 
+  if(CalDirection <= -172) 
+  CalDirection = -179;                          
   
   //Print data to serial port
   if (millis() - timer > display_timer) {                               
@@ -207,7 +208,7 @@ void loop() {
 
 
 //[Sail Controller]  
-  if ((h2Delta - h1Delta) < turnAngle){           // if the trajectory turns the boat less than the turnAngle degrees, then maintain 90 degree relative sail angle
+  if ((abs(prevHeading - currHeading)) < turnAngle){           // if the trajectory turns the boat less than the turnAngle degrees, then maintain 90 degree relative sail angle
     spSail = 90;                                  // set point sail angle relative to wind direction
     sDesired = abs(abs(CalDirection) - spSail);   // CalDirection [-179,180], sail doesn't care about direction   
   }
@@ -216,8 +217,15 @@ void loop() {
   }
   sCommand = getSailServoCommand(sDesired);       // calibrate desired sail angle to angle command for servo
   servoS.write(sCommand);                         // command sail servo
-  h2Delta = h1Delta;                              // current heading becomes previous heading 
-}
+  prevHeading = currHeading;                              // current heading becomes previous heading 
+  if (sCommand > 140)
+  sCommand = 140;                                 // maximum for servo
+  servoS.write(sCommand);                         // command sail servo
+  prevHeading = currHeading;                      // current heading becomes previous heading 
+
+  Serial.print(sCommand);
+  Serial.println(CalDirection);
+  }
 
 
 
@@ -309,11 +317,11 @@ int getSailOffset(int sDesired){            // used in getSailServoCommand funct
 }
 int getSailServoCommand(int sDesired){
   if(sDesired >= sLimit) {  // for desired sail angles greater than the limit, return the limit
-    sOffset = getSailOffset(sDesired);
-    return round(sLimit + sOffset);
+    sCommand = getSailOffset(sLimit);
+    return round(sCommand);
     }
   else {                    // for all other sail angles, return the calibrated sail angle 
-    sOffset = getSailOffset(sDesired);
-    return round(sDesired + sOffset); 
+    sCommand = getSailOffset(sDesired);
+    return round(sCommand); 
     }
 }
