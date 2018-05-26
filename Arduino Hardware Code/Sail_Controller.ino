@@ -12,8 +12,8 @@
 #include <Servo.h> 
 
 // assumed from rudder controller 
-int h1Delta = 0;          // current heading relative to boat (0 to 180 clockwise, 0 to -179 counterclockwise)
-int h2Delta = 0;          // previous heading relative to boat 
+int currHeading = 0;          // current heading relative to boat (0 to 180 clockwise, 0 to -179 counterclockwise)
+int prevHeading = 0;          // previous heading relative to boat 
 
 // Anemometer Wind Direction Init  
 #define WindSensorPin (2) // The pin location of the anemometer sensor 
@@ -34,7 +34,7 @@ int turnAngle = 45;              // turn angle in degrees to determine straight 
 int sDesired = 0;                // desired sail angle relative to nose, uncalibrated  
 int sZero = 60;                  // degrees required to zero sail servo in line with nose of boat
 int sLimit = 90;                 // constraint angle limit to 90 degrees for the sail, determined by max slack allowed by rope length 
-int sOffset=sZero - sDesired/12; // calculated offset from getSailOffset necessary to map servo commands to sail angle (0 to 90 relative to boat nose) 
+int sOffset;                     // calculated offset from getSailOffset necessary to map servo commands to sail angle (0 to 90 relative to boat nose) 
 int sCommand;                    // calibrated angle command in degrees to servo.write 
 int spSail;                      // set point sail angle relative to wind direction 
 
@@ -73,14 +73,14 @@ void loop() {
   // Anemometer Wind Speed Loop 
   unsigned long currentMillis = millis(); // current run time
   if ((unsigned long)(currentMillis - previousMillis) >= WindSpeedInterval){  // calculate wind speed after 3 seconds 
-    // converts from mph to knots (1 knot = 1.15078 mph) using the formula V = P(2.25/T) / 1.15078 
+    // convert to knots using the formula V = P(2.25/T) / 1.15078 
     WindSpeed = RotationsCounter*2.25/T/1.15078;
     RotationsCounter = 0;                 // reset RotationsCounter after averaging  
     previousMillis = millis();
     }
   
   // Sail Servo Loop 
-  if ((h2Delta - h1Delta) < turnAngle){           // if the trajectory turns the boat less than the turnAngle degrees, then maintain 90 degree relative sail angle
+  if ((abs(prevHeading - currHeading)) < turnAngle){           // if the trajectory turns the boat less than the turnAngle degrees, then maintain 90 degree relative sail angle
     spSail = 90;                                  // set point sail angle relative to wind direction
     sDesired = abs(abs(CalDirection) - spSail);   // CalDirection [-179,180], sail doesn't care about direction   
   }
@@ -89,7 +89,7 @@ void loop() {
   }
   sCommand = getSailServoCommand(sDesired);       // calibrate desired sail angle to angle command for servo
   servoS.write(sCommand);                         // command sail servo
-  h2Delta = h1Delta;                              // current heading becomes previous heading 
+  prevHeading = currHeading;                      // current heading becomes previous heading 
   }
 
 // Servo Function definitions
@@ -119,12 +119,6 @@ if ((millis() - ContactBounceTime) > 15 ) { // debounce the switch contact.
 
 // potentiometer values mapped to [-179,180], curve fit from data
 int getWindDirection(int VaneValue){     
-  if (VaneValue <= 1023 && VaneValue > 683){  // [0,180] degrees
-    return round(0.5227*VaneValue - 354.42);  
-  }
-  else if (VaneValue < 683 && VaneValue >= 0){  // [-179,0] degrees
-    return round(0.0004*VaneValue*VaneValue - 0.0005*VaneValue - 188.4);
-  }
-  else return 0; 
+  return return 0.3387*VaneValue - 172.4; ; 
 }
 
