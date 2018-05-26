@@ -43,37 +43,38 @@ TinyGPSPlus tinyGPS;        // Create a TinyGPS object
 #define gpsPort Serial1
 
 //Wind Optimization Initialization 
-float origin[2] = {38.537674, -121.748000};   //GPS coordinates of origin (latitude, longitude)
+float origin[2] = {38.562858, -121.765901};   //GPS coordinates of origin (latitude, longitude) sequoia apt
 //float curLocation[2]={origin[0],origin[1]};   //GPS coordinates of current location
 //float earthR= 6378100;      //m
 //float a;                    //used for calculating haversine angle
-int againstWindAngle=45;  
-float windAngle = 0;        //angle of wind in body frame (-180,180]
-float desiredAngle =45;
 float maxRadius = 20;          //m
 float radius;               //current distance from origin
+int againstWindAngle=180-45;  
+float windAngle = 0;        //angle of wind in body frame (-180,180]
+float desiredAngle =againstWindAngle;
 boolean turning=0;
 float previousMillisTurning;
 float turningBuffer = 3000; // buffer to allow boat to turn and get back into boundary (ms)
 
 //Rudder Initialization
-float rudder_pos = 45;      // positive rudder limit
-float rudder_neg = -45;     // negative rudder limit
+int rOffset=103;
+float rudderPos = 45+rOffset;      // positive rudder limit
+float rudderNeg = -45+rOffset;     // negative rudder limit
 float errorActual = 0;      // error = desired angle - actual angle 
 float Iaccum = 0;           // accummulator of integrative error.
 float Kp = 2;               // proportional gain - starting value suggested by Davi
-float Ki = .005;               // integral gain - starting value suggsted by Davi
-float control_act = 0;      // initialize control action (P + I)
+float Ki = .001;               // integral gain - starting value suggsted by Davi
+float controlAct = 0;      // initialize control action (P + I)
 float heading=0;            // actual angle/direction
 float angle_rudder = 0;     // angle of the rudder commanded 
 float sample_time = 0.2;    // sample time of the system (in seconds)
 int deg = 0;                // input angle into servo
-int rOffset=0;
+
 Servo servoR;
 
 //Sail Initialization 
 int turnAngle = 45;               // turn angle in degrees to determine straight sailing or turns
-int sDesired = 0;                 // desired sail angle relative to nose, uncalibrated  
+int sDesired = 45;                 // desired sail angle to maintain relative to nose, uncalibrated  
 int sZero = 60;                   // degrees required to zero sail servo in line with nose of boat
 int sLimit = 90;                  // constraint angle limit to 90 degrees for the sail, determined by max slack allowed by rope length 
 int sOffset=sZero - sDesired/12;  // calculated offset from getSailOffset necessary to map servo commands to sail angle (0 to 90 relative to boat nose) 
@@ -90,7 +91,7 @@ Servo servoS;
 int getWindDirection(int VaneValue);      
 
 //GPS Prototypes
-void printGPSInfo(void);
+void printInfo(void);
 
 //WO Prototypes
 float haversin(float angle);
@@ -161,7 +162,7 @@ void loop() {
     timer = millis();                                                   //Reset the timer    
     printInfo();                                                        //Print sensor data to serial port
   }
-  //smartDelay(1000); // "Smart delay" looks for GPS data while the Arduino's not doing anything else
+  smartDelay(50); // "Smart delay" looks for GPS data while the Arduino's not doing anything else
 
 
 
@@ -178,12 +179,12 @@ void loop() {
   radius=tinyGPS.distanceBetween(origin[0],origin[1],tinyGPS.location.lat(),tinyGPS.location.lng());
   
   //If the boat is beyond maxRadius from the origin, determine which way to turn
-  if (radius > maxRadius){  
+  if (radius > maxRadius && !turning){  
     //Determine which way to turn                           
-    if ( desiredAngle == againstWindAngle)      desiredAngle = 180;                  //CW turn to go with the wind
-    else if(desiredAngle == 180)                desiredAngle = -againstWindAngle;    //CW turn to go -45 against the wind
-    else if (desiredAngle == -againstWindAngle) desiredAngle = -180;                 //CCW turn to go with the wind
-    else if(desiredAngle == -180)                desiredAngle = againstWindAngle;     //CW turn to go 45 against the wind 
+    if ( desiredAngle == againstWindAngle)      desiredAngle = 0;                  //CW turn to go with the wind
+    else if(desiredAngle == 0)                desiredAngle = -againstWindAngle;    //CW turn to go -45 against the wind
+    else if (desiredAngle == -againstWindAngle) desiredAngle = -1;                 //CCW turn to go with the wind
+    else if(desiredAngle == -1)                desiredAngle = againstWindAngle;     //CW turn to go 45 against the wind 
 
     //Prep to turn
     previousMillisTurning=millis();
@@ -228,7 +229,10 @@ void printInfo(){
   Serial.print(tinyGPS.location.lng(), 8); Serial.print(","); 
   Serial.print(tinyGPS.speed.mph()); Serial.print(",");
   Serial.print(CalDirection); Serial.print(","); 
-  Serial.println(WindSpeed); 
+  Serial.print(WindSpeed); 
+
+  //for testing
+  Serial.print("\t\t");Serial.print(errorActual);Serial.print("\t");Serial.print(desiredAngle);Serial.print("\t");Serial.print(turning);Serial.print("\t");Serial.println(radius);
 }
 
 
@@ -249,13 +253,7 @@ void isr_rotation () {
   }
 }
 int getWindDirection(int VaneValue){              // Potentiometer values mapped to [-179,180], curve fit from data
-  if (VaneValue <= 1023 && VaneValue > 683){      // [0,180] degrees
-    return round(0.5227*VaneValue - 354.42);  
-  }
-  else if (VaneValue < 683 && VaneValue >= 0){    // [-179,0] degrees
-    return round(0.0004*VaneValue*VaneValue - 0.0005*VaneValue - 188.4);
-  } 
-  else return 0; 
+  return 0.3387*VaneValue - 172.4; ;  
 }
 
 
@@ -282,21 +280,21 @@ float saturator(float value) {
 }
 float saturator_rudder(float servoRudderAngle) {
   //Keeps rudder angle within limits
-  if (servoRudderAngle > rudder_pos) servoRudderAngle = rudder_pos;
-  if (servoRudderAngle < rudder_neg) servoRudderAngle = rudder_neg;
+  if (servoRudderAngle > rudderPos) servoRudderAngle = rudderPos;
+  if (servoRudderAngle < rudderNeg) servoRudderAngle = rudderNeg;
   return servoRudderAngle;
 }
 float rudder_controller(float desiredPath, float heading) {
   desiredPath = saturator(desiredPath);           //same as desired angle
   errorActual = desiredPath - heading;            //error between the actual heading and desired path
   errorActual = saturator(errorActual);
-  control_act = P() + I();                        //PI control
+  controlAct = P(); //+ I();                        //PI control
    
   if (errorActual > 0) {                          //turning the boat in the cw direction
-    angle_rudder = (rudder_pos)*(control_act/180);
+    angle_rudder = rOffset + (rudderNeg-rOffset)*controlAct/180;
   }
   else {                                          //turning the boat in the ccw direction
-    angle_rudder = (rudder_neg)*(control_act/180);
+    angle_rudder = rOffset + (rudderNeg-rOffset)*controlAct/180;
   }
 
   angle_rudder = saturator_rudder(angle_rudder);
