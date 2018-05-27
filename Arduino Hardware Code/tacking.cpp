@@ -276,11 +276,11 @@ void loop() {
   
   /* for testing purposes */
   //float f_lat, f_lon;
-  Serial.print("Latitude: "); Serial.print(currentLocation.latitude);
-  Serial.print(" Longitude: "); Serial.println(currentLocation.longitude);
-  Serial.print("desiredPath Angle: "); Serial.print(desiredPath); 
-  Serial.print(" Current Heading Angle: "); Serial.print(currHeading);
-  Serial.print(" Rudder Angle: "); Serial.println(rudderAngle-rudOffset);
+  //Serial.print("Latitude: "); Serial.print(currentLocation.latitude);
+  //Serial.print(" Longitude: "); Serial.println(currentLocation.longitude);
+  //Serial.print("desiredPath Angle: "); Serial.print(desiredPath); 
+  //Serial.print(" Current Heading Angle: "); Serial.print(currHeading);
+  //Serial.print(" Rudder Angle: "); Serial.println(rudderAngle-rudOffset);
   // smartdelay(500); // for GPS
   //gps.f_get_position(&f_lat, &f_lon);
   //Serial.print("f_lat = "); Serial.println(f_lat);
@@ -300,6 +300,13 @@ void loop() {
   prevHeading = currHeading;                              // current heading becomes previous heading  
   
   //delay(200);
+    
+  // Serial Monitor Printing Statements 
+  Serial.print(currentLocation.latitude); Serial.print(","); 			    // GPS: latitude
+  Serial.print(currentLocation.longitude); Serial.print(",");               // GPS: longitude 
+  Serial.print(gps.speed()*100); Serial.print(",");							// GPS: boat speed in knots 
+  Serial.print(CalDirection); Serial.print(","); 							// Anemometer: Apparent Wind Direction in degrees
+  Serial.println(WindSpeed); 											    // Anemometer: Apparent Wind Speed in knots 
 } // end of void loop
 
 /// RUDDER CONTROLLER FUNCTIONS ///
