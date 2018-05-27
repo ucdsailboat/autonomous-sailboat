@@ -209,15 +209,15 @@ void loop() {
   
   /* for testing purposes */
   //float f_lat, f_lon;
-  Serial.print("Latitude: "); Serial.print(currentLocation.latitude);
+  /*Serial.print("Latitude: "); Serial.print(currentLocation.latitude);
   Serial.print(" Longitude: "); Serial.println(currentLocation.longitude);
   Serial.print("desiredPath Angle: "); Serial.print(desiredPath); 
   Serial.print(" Current Heading Angle: "); Serial.print(currHeading);
-  Serial.print(" Rudder Angle: "); Serial.println(rudderAngle-rudOffset);
+  Serial.print(" Rudder Angle: "); Serial.println(rudderAngle-rudOffset);*/
   // smartdelay(500); // for GPS
   //gps.f_get_position(&f_lat, &f_lon);
   //Serial.print("f_lat = "); Serial.println(f_lat);
-  
+      
   // Anemometer Wind Direction Loop
   VaneValue = analogRead(A4); 
   CalDirection = getWindDirection(VaneValue);
@@ -249,7 +249,13 @@ void loop() {
   servoS.write(sCommand);                         // command sail servo
   prevHeading = currHeading;                              // current heading becomes previous heading   
   
-  delay(200);
+  //delay(200);
+  // Serial Monitor Printing Statements 
+  Serial.print(currentLocation.latitude); Serial.print(","); 								// GPS: latitude
+  Serial.print(currentLocation.longitude); Serial.print(",");               // GPS: longitude 
+  Serial.print(gps.speed()*100); Serial.print(",");													// GPS: boat speed in knots 
+  Serial.print(CalDirection); Serial.print(","); 														// Anemometer: Apparent Wind Direction in degrees
+  Serial.println(WindSpeed); 																								// Anemometer: Apparent Wind Speed in knots 
 } // end of void loop
 
 /// RUDDER CONTROLLER FUNCTIONS ///
@@ -346,7 +352,7 @@ float gen_heading(float mag_x, float mag_y){
 void update_position(struct location local, int number){  // local has latitude and longitude
   bool newData = false; // for debugging, determine whether GPS got new data
   unsigned long startTime = millis(); // start the clock
-  unsigned long delayThresh = 300; // delay threshold [ms]
+  unsigned long delayThresh = 50; // delay threshold [ms]
   // obtain readings from the GPS to the serial port in 1/2 second loop
   do
   {
