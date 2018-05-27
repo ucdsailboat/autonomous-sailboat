@@ -403,7 +403,7 @@ float gen_heading(float mag_x, float mag_y){
 void update_position(struct location local, int number){  // local has latitude and longitude
   bool newData = false; // for debugging, determine whether GPS got new data
   unsigned long startTime = millis(); // start the clock
-  unsigned long delayThresh = 300; // delay threshold [ms]
+  unsigned long delayThresh = 50; // delay threshold [ms]
   // obtain readings from the GPS to the serial port in 1/2 second loop
   do
   {
