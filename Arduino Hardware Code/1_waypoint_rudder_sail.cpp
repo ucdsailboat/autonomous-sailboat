@@ -79,7 +79,7 @@ int getSailServoCommand(int sDesired);         // calibrate desired sail angle t
 Adafruit_LSM303_Mag_Unified mag = Adafruit_LSM303_Mag_Unified(12345);
 
 /* Rudder Controller Init */
-int rudOffset = 91;      //offset to zero position (parallel with nose)
+int rudOffset = 103;      //offset to zero position (parallel with nose)
 // define rudder negative and positive limits 
 float rudderPos = 45 + rudOffset; // degrees
 float rudderNeg = -45 + rudOffset; // degrees 
@@ -208,7 +208,7 @@ void loop() {
   servoS.write(sCommand);                         // command sail servo
   prevHeading = currHeading;                              // current heading becomes previous heading   
   
-  delay(200);
+  //delay(200);
     
   // Serial Monitor Printing Statements 
   Serial.print(currentLocation.latitude); Serial.print(","); 				// GPS: latitude
@@ -312,7 +312,7 @@ float gen_heading(float mag_x, float mag_y){
 void update_position(struct location local, int number){  // local has latitude and longitude
   bool newData = false; // for debugging, determine whether GPS got new data
   unsigned long startTime = millis(); // start the clock
-  unsigned long delayThresh = 300; // delay threshold [ms]
+  unsigned long delayThresh = 50; // delay threshold [ms]
   // obtain readings from the GPS to the serial port in 1/2 second loop
   do
   {
