@@ -184,7 +184,7 @@ void loop() {
   // Curve fit outputs maximum 174 degrees and minimum -172, so set bouds as 180 and -179
   if (CalDirection >= 174)
   CalDirection = 180;
-  If (CalDirection <= -172)
+  if (CalDirection <= -172)
   CalDirection = -179;
   
   // Anemometer Wind Speed Loop 
