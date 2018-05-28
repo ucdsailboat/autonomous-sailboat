@@ -12,7 +12,7 @@ Connections:
  *  Rudder Servo: Signal to Pin 6
  *  Magnetometer: SDA to SDA, SCL to SCL, Power to Vin, GND to GND
  *  GPS: TX1 is 18, RX1 is 19
-Updated by: Jordan Leung, Bryan Zhao, Michele Shi 5/25/18
+Updated by: Jordan Leung, Bryan Zhao, Michele Shi 5/28/18
 */
 
 // rudder controller libraries
@@ -130,10 +130,12 @@ void setup() {
   
   // rudder controller --
   // define target location (chosen from google earth pro)
-  targetLocation.latitude = 38.636537; // point 1 at sac aquatic center
-  targetLocation.longitude = -121.216988;
+  /*targetLocation.latitude = 38.636537; // point 1 at sac aquatic center
+  targetLocation.longitude = -121.216988; */
   // targetLocation.latitude = 38.538967; // barony pl. cul de sac
   // targetLocation.longitude = -121.722087;
+  targetLocation.latitude =  38.537587; // point 1: lake spafford (closest to shore)
+  targetLocation.longitude = -121.748064;
   // Rudder Servo Setup
   servoRudder.attach(6); // attach pin for the rudder servo
   servoRudder.write(rudOffset); // sets initial servo position 
