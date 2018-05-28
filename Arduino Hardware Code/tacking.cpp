@@ -124,10 +124,11 @@ float distanceWP = 0.0; // holds value of the distance between waypoints
 float distanceTK = 0.0; // distance between points for tacking
 float traveled = 0.0;
 std::vector<location> hexWaypoints; // vector that holds all the different waypoints 
+std::vector<location> triWaypoints;
 int iterWP = 0; // iterator for waypoints vector
 
 void setup() {
-  // define waypoints (sac aquatic center)
+ /* // define waypoints (sac aquatic center)
   targetLocation.latitude = 38.636537; // point 1
   targetLocation.longitude = -121.216988;
   hexWaypoints.push_back(targetLocation);
@@ -151,6 +152,18 @@ void setup() {
   targetLocation.latitude = 38.636537; // point 6, connects back to point 1
   targetLocation.longitude = -121.216605;
   hexWaypoints.push_back(targetLocation);
+  */
+  targetLocation.latitude =  38.537587; // point 1: lake spafford (closest to shore)
+  targetLocation.longitude = -121.748064;
+  triWaypoints.push_back(targetLocation);
+
+  targetLocation.latitude =  38.537590; // point 2
+  targetLocation.longitude = -121.747832;
+  triWaypoints.push_back(targetLocation);
+
+  targetLocation.latitude =  38.537742; // point 3
+  targetLocation.longitude = -121.747957;
+  triWaypoints.push_back(targetLocation); 
   
   Serial.begin(BAUDRATE);
   gpsPort.begin(BAUDRATE); // needs to be 9600 for proper GPS reading
@@ -188,11 +201,11 @@ void setup() {
 
 void loop() {
   
-  distanceWP = calculate_distance(currentLocation, hexWaypoints[iterWP]); // find distance between current and desired waypoints
+  distanceWP = calculate_distance(currentLocation, triWaypoints[iterWP]); // find distance between current and desired waypoints
   // if distance from current location to next WP is less than 8 meters, move to next waypoint
   if (distanceWP < distMargin){
     iterWP += 1;
-    targetLocation = hexWaypoints[iterWP];
+    targetLocation = triWaypoints[iterWP];
     if (iterWP == 5){
       iterWP = 0; // reset back to point 1 (hexWaypoints[0]) to prevent accessing wrong memory
     }
