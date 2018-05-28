@@ -39,7 +39,7 @@ Updated by: Jordan Leung, Bryan Zhao, Michele Shi 5/28/18
 #define gpsPort Serial1
 
 // anemometer wind direction 
-#define WindSensorPin (2) // pin location of the anemometer sensor 
+#define WindSensorPin (0) // pin location of the anemometer sensor 
 int VaneValue;            // raw analog value from wind vane
 int CalDirection;         // apparent wind direction: [0,180] CW, [0,-179] CCW, 180 is dead zone
 
