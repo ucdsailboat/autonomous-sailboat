@@ -42,7 +42,7 @@ TinyGPSPlus tinyGPS;        // Create a TinyGPS object
 #define gpsPort Serial1
 
 //Wind Optimization Initialization 
-float origin[2] = {38.538683, -121.721837};   //GPS coordinates of origin (latitude, longitude) sequoia apt
+float origin[2] = {38.537672, -121.748006};   //GPS coordinates of origin (latitude, longitude) sequoia apt
 //float curLocation[2]={origin[0],origin[1]};   //GPS coordinates of current location
 //float earthR= 6378100;      //m
 //float a;                    //used for calculating haversine angle
@@ -223,8 +223,8 @@ void loop() {
   servoS.write(sCommand);                         // command sail servo
   prevHeading = currHeading;                      // current heading becomes previous heading 
 
-  Serial.print(sCommand);
-  Serial.println(CalDirection);
+  //Serial.print(sCommand);
+  //Serial.println(CalDirection);
   }
 
 
@@ -238,10 +238,10 @@ void printInfo(){
   Serial.print(tinyGPS.location.lng(), 8); Serial.print(","); 
   Serial.print(tinyGPS.speed.mph()); Serial.print(",");
   Serial.print(CalDirection); Serial.print(","); 
-  Serial.print(WindSpeed); 
+  Serial.println(WindSpeed); 
 
   //for testing
-  Serial.print("\t\t");Serial.print(errorActual);Serial.print("\t");Serial.print(desiredAngle);Serial.print("\t");Serial.print(turning);Serial.print("\t");Serial.println(radius);
+  //Serial.print("\t\t");Serial.print(errorActual);Serial.print("\t");Serial.print(desiredAngle);Serial.print("\t");Serial.print(turning);Serial.print("\t");Serial.println(radius);
 }
 
 
