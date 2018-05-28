@@ -120,7 +120,7 @@ float distanceWP = 0.0; // holds value of the distance between waypoints
 std::vector<location> hexWaypoints; // vector that holds all the different waypoints 
 int iterWP = 0; // iterator for waypoints vector
 
-// std::vector<location> triWaypoints; // for testing at lake spafford
+std::vector<location> triWaypoints; // for testing at lake spafford
 
 void setup() {
 /*  // define waypoints (sac aquatic center)
