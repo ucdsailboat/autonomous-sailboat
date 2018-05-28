@@ -271,8 +271,8 @@ void loop() {
   
   //delay(200);
   // Serial Monitor Printing Statements 
-  Serial.print(currentLocation.latitude); Serial.print(","); 								// GPS: latitude
-  Serial.print(currentLocation.longitude); Serial.print(",");               // GPS: longitude 
+  Serial.print(currentLocation.latitude,8); Serial.print(","); 								// GPS: latitude
+  Serial.print(currentLocation.longitude,8); Serial.print(",");               // GPS: longitude 
   Serial.print(gps.speed()*100); Serial.print(",");													// GPS: boat speed in knots 
   Serial.print(CalDirection); Serial.print(","); 														// Anemometer: Apparent Wind Direction in degrees
   Serial.println(WindSpeed); 																								// Anemometer: Apparent Wind Speed in knots 
