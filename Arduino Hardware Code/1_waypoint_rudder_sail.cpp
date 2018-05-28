@@ -165,6 +165,8 @@ void loop() {
   desiredPath = calculate_orientation(currentLocation, targetLocation);
   // obtain the needed rudder angle to reduce error b/w desired and actual 
   rudderAngle = rudder_controller(desiredPath, currHeading);
+  if (rudderAngle > rudderPos) { rudderAngle = rudderPos; }
+  else if (rudderAngle < rudderNeg) {rudderAngle = rudderNeg;}
   servoRudder.write(rudderAngle); // write desired angle into servo 
   
   
