@@ -50,7 +50,7 @@ int CalDirection;         // apparent wind direction: [0,180] CW, [0,-179] CCW, 
 // rudder ctrl 
 TinyGPS gps; // gps object
 Servo servoRudder; // declare a servo object
-float distMargin = 8.0; // margin of error for waypoints (defined as a radius in [meters]) 
+float distMargin = 6.0; // margin of error for waypoints (defined as a radius in [meters]) 
 // SoftwareSerial ss(TX, RX); // use pins 4 and 3 for SW serial ports
 //using hardware serial 
 //HardwareSerial mySerial = Serial1;
@@ -149,17 +149,17 @@ void setup() {
   hexWaypoints.push_back(targetLocation); 
   */
     
-    targetLocation.latitude =  38.537587; // point 1: lake spafford (closest to shore)
-    targetLocation.longitude = -121.748064;
-    triWaypoints.push_back(targetLocation);
+  targetLocation.latitude =  38.537587; // point 1: lake spafford (closest to shore)
+  targetLocation.longitude = -121.748064;
+  triWaypoints.push_back(targetLocation);
 
-    targetLocation.latitude =  38.537590; // point 2
-    targetLocation.longitude = -121.747832;
-    triWaypoints.push_back(targetLocation);
+  targetLocation.latitude =  38.537590; // point 2
+  targetLocation.longitude = -121.747832;
+  triWaypoints.push_back(targetLocation);
 
-    targetLocation.latitude =  38.537742; // point 3
-    targetLocation.longitude = -121.747957;
-    triWaypoints.push_back(targetLocation); 
+  targetLocation.latitude =  38.537742; // point 3
+  targetLocation.longitude = -121.747957;
+  triWaypoints.push_back(targetLocation); 
   
   Serial.begin(BAUDRATE);
   gpsPort.begin(BAUDRATE); // needs to be 9600 for proper GPS reading
@@ -220,6 +220,8 @@ void loop() {
   desiredPath = calculate_orientation(currentLocation, targetLocation);
   // obtain the needed rudder angle to reduce error b/w desired and actual 
   rudderAngle = rudder_controller(desiredPath, currHeading);
+  if (rudderAngle > rudderPos) { rudderAngle = rudderPos;}
+  else if (rudderAngle < rudderNeg) {rudderAngle = rudderNeg;}
   servoRudder.write(rudderAngle); // write desired angle into servo 
   
   
@@ -313,7 +315,7 @@ float rudder_controller(float desiredPath, float heading) {
   errorActual = saturator(errorActual);
   // apply PI theory 
   controlAct = P() + I();
-  angle = rudOffset + (rudderNeg- rudOffset)*(controlAct/180);
+  angle = rudOffset + (rudderPos- rudOffset)*(controlAct/180);
  /* // turning the boat in the counterclockwise direction
   if (errorActual < 0) {
     angle = rudOffset + (rudderPos- rudOffset)*(controlAct/180);
