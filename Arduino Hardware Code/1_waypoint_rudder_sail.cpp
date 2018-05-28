@@ -121,7 +121,7 @@ void setup() {
   pinMode(WindSensorPin, INPUT); 
   
   // Anemometer Wind Speed Setup 
-  attachInterrupt(0 isr_rotation, FALLING); 
+  attachInterrupt(0, isr_rotation, FALLING); 
   sei(); // Enables interrupts 
   
   // Sail Servo Setup
@@ -199,7 +199,7 @@ void loop() {
   }
   
   // Sail Servo Loop 
-  if (abs(prevHeading - currHeading) < turnAngle){           // if the trajectory turns the boat less than the turnAngle degrees, then maintain 90 degree relative sail angle
+  if (abs(prevHeading - currHeading) < turnAngle){ // if the trajectory turns the boat less than the turnAngle degrees, then maintain 90 degree relative sail angle
     spSail = 90;                                  // set point sail angle relative to wind direction
     sDesired = abs(abs(CalDirection) - spSail);   // CalDirection [-179,180], sail doesn't care about direction   
   }
@@ -208,7 +208,7 @@ void loop() {
   }
   sCommand = getSailServoCommand(sDesired);       // calibrate desired sail angle to angle command for servo
   servoS.write(sCommand);                         // command sail servo
-  prevHeading = currHeading;                              // current heading becomes previous heading   
+  prevHeading = currHeading;                      // current heading becomes previous heading   
   
   //delay(200);
     
@@ -389,12 +389,12 @@ int getSailOffset(int sDesired){            // used in getSailServoCommand funct
 
 int getSailServoCommand(int sDesired){
   if(sDesired >= sLimit) {  // for desired sail angles greater than the limit, return the limit
-    sOffset = getSailOffset(sDesired);
-    return round(sLimit + sOffset);
+    sCommand = getSailOffset(sLimit);
+    return round(sCommand);
     }
   else {                    // for all other sail angles, return the calibrated sail angle 
-    sOffset = getSailOffset(sDesired);
-    return round(sDesired + sOffset); 
+    sCommand = getSailOffset(sDesired);
+    return round(sCommand); 
     }
 }
 
