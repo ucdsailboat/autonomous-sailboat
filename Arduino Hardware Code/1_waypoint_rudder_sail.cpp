@@ -39,7 +39,7 @@ Updated by: Jordan Leung, Bryan Zhao, Michele Shi 5/28/18
 #define gpsPort Serial1
 
 // anemometer wind direction 
-#define WindSensorPin (0) // pin location of the anemometer sensor 
+#define WindSensorPin (2) // pin location of the anemometer sensor 
 int VaneValue;            // raw analog value from wind vane
 int CalDirection;         // apparent wind direction: [0,180] CW, [0,-179] CCW, 180 is dead zone
 
@@ -257,7 +257,7 @@ float rudder_controller(float desiredPath, float heading) {
   errorActual = saturator(errorActual);
   // apply PI theory 
   controlAct = P() + I();
-  angle = rudOffset + (rudderNeg- rudOffset)*(controlAct/180);
+  angle = rudOffset + (rudderPos- rudOffset)*(controlAct/180);
  /* // turning the boat in the counterclockwise direction
   if (errorActual < 0) {
     angle = rudOffset + (rudderPos- rudOffset)*(controlAct/180);
