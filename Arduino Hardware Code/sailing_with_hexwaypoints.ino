@@ -69,7 +69,7 @@ int turnAngle = 45;              // turn angle in degrees to determine straight 
 int sDesired = 0;                // desired sail angle relative to nose, uncalibrated  
 int sZero = 60;                  // degrees required to zero sail servo in line with nose of boat
 int sLimit = 90;                 // constraint angle limit to 90 degrees for the sail, determined by max slack allowed by rope length 
-int sOffset=sZero;               // calculated offset from getSailOffset necessary to map servo commands to sail angle (0 to 90 relative to boat nose) 
+int sOffset;                     // calculated offset from getSailOffset necessary to map servo commands to sail angle (0 to 90 relative to boat nose) 
 int sCommand;                    // calibrated angle command in degrees to servo.write 
 int spSail;                      // set point sail angle relative to wind direction 
 
@@ -174,7 +174,7 @@ void setup() {
   
   // Sail Servo Setup
   servoS.attach(7);      // pin for the servoS control
-  servoS.write(sOffset); // initialize at zero position 
+  servoS.write(sZero); // initialize at zero position 
   
   // rudder controller --
   // define target location (chosen from google earth pro)
@@ -262,8 +262,10 @@ void loop() {
     sDesired = sLimit*abs(CalDirection)/180;      // from Davi sail Control Law, executed on turns 
   }
   sCommand = getSailServoCommand(sDesired);       // calibrate desired sail angle to angle command for servo
-  servoS.write(sCommand);                         // command sail servo
-  prevHeading = currHeading;                              // current heading becomes previous heading   
+  if (sCommand > 140)
+  sCommand = 140;                                 // maximum for servo
+    servoS.write(sCommand);                       // command sail servo
+  prevHeading = currHeading;                     // current heading becomes previous heading   
   
   //delay(200);
   // Serial Monitor Printing Statements 
@@ -443,12 +445,12 @@ int getSailOffset(int sDesired){            // used in getSailServoCommand funct
 
 int getSailServoCommand(int sDesired){
   if(sDesired >= sLimit) {  // for desired sail angles greater than the limit, return the limit
-    sOffset = getSailOffset(sDesired);
-    return round(sLimit + sOffset);
+    sCommand = getSailOffset(sLimit);
+    return round(sCommand);
     }
   else {                    // for all other sail angles, return the calibrated sail angle 
-    sOffset = getSailOffset(sDesired);
-    return round(sDesired + sOffset); 
+    sCommand = getSailOffset(sDesired);
+    return round(sCommand); 
     }
 }
 
