@@ -37,6 +37,7 @@ Updated by: Jordan Leung, Bryan Zhao, Michele Shi 5/28/18
 #define RX 4 // on the arduino pins
 #define TX 3
 #define gpsPort Serial1
+#define BAUDRATE 9600
 
 // anemometer wind direction 
 #define WindSensorPin (2) // pin location of the anemometer sensor 
@@ -45,6 +46,7 @@ int CalDirection;         // apparent wind direction: [0,180] CW, [0,-179] CCW, 
 
 TinyGPS gps; // gps object
 Servo servoRudder; // declare a servo object
+float distMargin = 3.0; // margin of error for waypoints 
 // SoftwareSerial ss(TX, RX); // use pins 4 and 3 for SW serial ports
 //using hardware serial 
 //HardwareSerial mySerial = Serial1;
@@ -113,8 +115,8 @@ location currentLocation, targetLocation; // define structs with gps coordinates
 // vector<location> waypoints; // vector that holds all the different waypoints 
 
 void setup() {
-  Serial.begin(9600);
-  gpsPort.begin(9600); // needs to be 9600 for proper GPS reading
+  Serial.begin(BAUDRATE);
+  gpsPort.begin(BAUDRATE); // needs to be 9600 for proper GPS reading
 
   // sail controller --
   // Anemometer Wind Direction Setup
@@ -157,7 +159,6 @@ void loop() {
   sensors_event_t magEvent; 
   mag.getEvent(&magEvent);
   currHeading = gen_heading(magEvent.magnetic.x, magEvent.magnetic.y); // [-180, 180]
-  debugHeading = debug_heading(magEvent.magnetic.x, magEvent.magnetic.y); // for debugging, [0,360] deg from North
   //update current location, number 1 will update currentLocation 
   update_position(currentLocation, 1);
   //gps.f_get_position(&currentLocation.latitude, &currentLocation.longitude);
@@ -259,7 +260,7 @@ float rudder_controller(float desiredPath, float heading) {
   errorActual = saturator(errorActual);
   // apply PI theory 
   controlAct = P() + I();
-  angle = rudOffset + (rudderPos- rudOffset)*(controlAct/180);
+  angle = rudOffset + (rudderNeg - rudOffset)*(controlAct/180);
  /* // turning the boat in the counterclockwise direction
   if (errorActual < 0) {
     angle = rudOffset + (rudderPos- rudOffset)*(controlAct/180);
@@ -282,13 +283,6 @@ float I()
 {                                    
   Iaccum = Iaccum + Ki * errorActual * sampleTime; // I = I + Ki* Err* T
     return Iaccum;
-}
-
-// generates heading from 0-360 without saturation, no tilt compensation
-float debug_heading(float mag_x, float mag_y){
-  float debugHeading = (atan2(mag_y,mag_x) * 180) / PI;
-  if (debugHeading < 0) debugHeading += 360;
-  return debugHeading;
 }
 
 
