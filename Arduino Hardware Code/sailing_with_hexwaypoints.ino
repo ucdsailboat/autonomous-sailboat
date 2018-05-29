@@ -50,7 +50,7 @@ int CalDirection;         // apparent wind direction: [0,180] CW, [0,-179] CCW, 
 // rudder ctrl 
 TinyGPS gps; // gps object
 Servo servoRudder; // declare a servo object
-float distMargin = 6.0; // margin of error for waypoints (defined as a radius in [meters]) 
+float distMargin = 3.0; // margin of error for waypoints (defined as a radius in [meters]) 
 // SoftwareSerial ss(TX, RX); // use pins 4 and 3 for SW serial ports
 //using hardware serial 
 //HardwareSerial mySerial = Serial1;
@@ -203,7 +203,7 @@ void loop() {
   if (distanceWP < distMargin){
     iterWP += 1;
     targetLocation = triWaypoints[iterWP];
-    if (iterWP == 5){
+    if (iterWP == 2) { // 0 - waypoint 1, 1 - waypoint 2, 2 - waypoint 3, 
       iterWP = 0; // reset back to point 1 (hexWaypoints[0]) to prevent accessing wrong memory
     }
   }
@@ -315,7 +315,7 @@ float rudder_controller(float desiredPath, float heading) {
   errorActual = saturator(errorActual);
   // apply PI theory 
   controlAct = P() + I();
-  angle = rudOffset + (rudderPos- rudOffset)*(controlAct/180);
+  angle = rudOffset + (rudderNeg- rudOffset)*(controlAct/180);
  /* // turning the boat in the counterclockwise direction
   if (errorActual < 0) {
     angle = rudOffset + (rudderPos- rudOffset)*(controlAct/180);
@@ -340,12 +340,6 @@ float I()
     return Iaccum;
 }
 
-// generates heading from 0-360 without saturation, no tilt compensation
-float debug_heading(float mag_x, float mag_y){
-  float debugHeading = (atan2(mag_y,mag_x) * 180) / PI;
-  if (debugHeading < 0) debugHeading += 360;
-  return debugHeading;
-}
 
 
 // generates current heading in global coordinates from magnetometer values
