@@ -49,7 +49,7 @@ int CalDirection;         // apparent wind direction: [0,180] CW, [0,-179] CCW, 
 // rudder ctrl 
 TinyGPS gps; // gps object
 Servo servoRudder; // declare a servo object
-float distMargin = 6.0; // margin of error for waypoints (defined as a radius in [meters]) 
+float distMargin = 3.0; // margin of error for waypoints (defined as a radius in [meters]) 
 // SoftwareSerial ss(TX, RX); // use pins 4 and 3 for SW serial ports
 //using hardware serial 
 //HardwareSerial mySerial = Serial1;
@@ -165,6 +165,10 @@ void setup() {
   targetLocation.longitude = -121.747957;
   triWaypoints.push_back(targetLocation); 
   
+  /*targetLocation.latitude =  38.537587; // point 4 (back to point 1): lake spafford (closest to shore)
+  targetLocation.longitude = -121.748064;
+  triWaypoints.push_back(targetLocation); */
+    
   Serial.begin(BAUDRATE);
   gpsPort.begin(BAUDRATE); // needs to be 9600 for proper GPS reading
 
