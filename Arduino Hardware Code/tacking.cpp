@@ -41,6 +41,9 @@ Updated by: Jordan Leung, Bryan Zhao, Michele Shi 5/25/18
 #define gpsPort Serial1
 #define BAUDRATE 9600
 
+//data logging initialization
+float display_timer = 500; 
+
 // anemometer wind direction 
 #define WindSensorPin (2) // pin location of the anemometer sensor 
 int VaneValue;            // raw analog value from wind vane
@@ -61,6 +64,7 @@ unsigned long WindSpeedInterval = T*1000; // time in milliseconds needed to aver
 unsigned long previousMillis = 0;         // millis() returns an unsigned long
 volatile unsigned long RotationsCounter;  // cup rotation counter used in interrupt routine 
 volatile unsigned long ContactBounceTime; // timer to avoid contact bounce in interrupt routine 
+uint32_t timer = millis(); 
 
 // Sail Servo Init
 Servo servoS;                    // servo object for sail servo 
@@ -205,6 +209,8 @@ void setup() {
 
 void loop() {
   
+  if ((timer > millis()) timer = millis(); 
+      
   distanceWP = calculate_distance(currentLocation, triWaypoints[iterWP]); // find distance between current and desired waypoints
   // if distance from current location to next WP is less than 8 meters, move to next waypoint
   if (distanceWP < distMargin){
@@ -317,14 +323,17 @@ void loop() {
   prevHeading = currHeading;                              // current heading becomes previous heading  
   
   //delay(200);
-    
-  // Serial Monitor Printing Statements 
-  Serial.print(currentLocation.latitude); Serial.print(","); 			    // GPS: latitude
-  Serial.print(currentLocation.longitude); Serial.print(",");               // GPS: longitude 
-  Serial.print(gps.speed()*100); Serial.print(",");							// GPS: boat speed in knots 
-  Serial.print(CalDirection); Serial.print(","); 							// Anemometer: Apparent Wind Direction in degrees
-  Serial.println(WindSpeed); 											    // Anemometer: Apparent Wind Speed in knots 
-} // end of void loop
+  if (millis() - timer > display_timer) {
+    timer = millis(); 
+    // Serial Monitor Printing Statements 
+    Serial.print(currentLocation.latitude); Serial.print(","); 			    // GPS: latitude
+    Serial.print(currentLocation.longitude); Serial.print(",");               // GPS: longitude 
+    Serial.print(gps.speed()*100); Serial.print(",");							// GPS: boat speed in knots 
+    Serial.print(CalDirection); Serial.print(","); 							// Anemometer: Apparent Wind Direction in degrees
+    Serial.println(WindSpeed); 											    // Anemometer: Apparent Wind Speed in knots 
+  }
+      
+  } // end of void loop
 
 /// RUDDER CONTROLLER FUNCTIONS ///
 // define max and min limits for the boat's orientation (angle)
