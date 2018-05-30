@@ -209,10 +209,10 @@ void loop() {
   // if distance from current location to next WP is less than 8 meters, move to next waypoint
   if (distanceWP < distMargin){
     iterWP += 1;
-    targetLocation = triWaypoints[iterWP];
-    if (iterWP == 5){
+    if (iterWP == 3){
       iterWP = 0; // reset back to point 1 (hexWaypoints[0]) to prevent accessing wrong memory
     }
+    targetLocation = triWaypoints[iterWP];
   }
     
   // Anemometer Wind Direction Loop
