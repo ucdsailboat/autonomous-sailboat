@@ -219,10 +219,6 @@ void loop() {
     targetLocation = triWaypoints[iterWP];
     if (iterWP == 3) { // 0 - waypoint 1, 1 - waypoint 2, 2 - waypoint 3, 
       iterWP = 0; // reset back to point 1 (hexWaypoints[0]) to prevent accessing wrong memory
-      // indicating that the boat has reached back to the origin
-      while (1) {
-        servoRudder.write(45);
-      }
     }
   }
   // for rudder ctrl: obtain current heading
