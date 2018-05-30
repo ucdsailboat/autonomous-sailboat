@@ -217,7 +217,7 @@ void loop() {
   if (distanceWP < distMargin){
     iterWP += 1;
     // resets back to point 1 (hexWaypoints[0]) to prevent accessing wrong memory  
-    if (iterWP == 3) {
+    if (iterWP >= 3) {
         iterWP = 0;
     }
     targetLocation = triWaypoints[iterWP];
