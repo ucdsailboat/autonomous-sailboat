@@ -165,9 +165,9 @@ void setup() {
   targetLocation.longitude = -121.747957;
   triWaypoints.push_back(targetLocation); 
  
- /* targetLocation.latitude =  38.537587; // point 4 (back to point 1): lake spafford (closest to shore)
+  targetLocation.latitude =  38.537587; // point 4 (back to point 1): lake spafford (closest to shore)
   targetLocation.longitude = -121.748064;
-  triWaypoints.push_back(targetLocation); */
+  triWaypoints.push_back(targetLocation); 
   
   Serial.begin(BAUDRATE);
   gpsPort.begin(BAUDRATE); // needs to be 9600 for proper GPS reading
@@ -211,8 +211,12 @@ void loop() {
   if (distanceWP < distMargin){
     iterWP += 1;
     targetLocation = triWaypoints[iterWP];
-    if (iterWP == 2) { // 0 - waypoint 1, 1 - waypoint 2, 2 - waypoint 3, 
+    if (iterWP == 3) { // 0 - waypoint 1, 1 - waypoint 2, 2 - waypoint 3, 
       iterWP = 0; // reset back to point 1 (hexWaypoints[0]) to prevent accessing wrong memory
+      // indicating that the boat has reached back to the origin
+      while (1) {
+        servoRudder.write(45);
+      }
     }
   }
   // for rudder ctrl: obtain current heading
