@@ -42,11 +42,11 @@ TinyGPSPlus tinyGPS;        // Create a TinyGPS object
 #define gpsPort Serial1
 
 //Wind Optimization Initialization 
-float origin[2] = {38.537672, -121.748006};   //GPS coordinates of origin (latitude, longitude) sequoia apt
+float origin[2] = {38.537587, -121.748064};   //GPS coordinates of origin (latitude, longitude) sequoia apt
 //float curLocation[2]={origin[0],origin[1]};   //GPS coordinates of current location
 //float earthR= 6378100;      //m
 //float a;                    //used for calculating haversine angle
-float maxRadius = 50;          //m
+float maxRadius = 7;          //m
 float radius;               //current distance from origin
 int againstWindAngle=180-45;  
 float windAngle = 0;        //angle of wind in body frame (-180,180]
@@ -238,6 +238,7 @@ void printInfo(){
   Serial.print(tinyGPS.location.lng(), 8); Serial.print(","); 
   Serial.print(tinyGPS.speed.mph()); Serial.print(",");
   Serial.print(CalDirection); Serial.print(","); 
+  Serial.print(desiredAngle);Serial.print(",");
   Serial.println(WindSpeed); 
 
   //for testing
