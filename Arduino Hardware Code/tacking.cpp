@@ -209,7 +209,7 @@ void setup() {
 
 void loop() {
   
-  if ((timer > millis()) timer = millis(); 
+  if (timer > millis()) timer = millis(); 
       
   distanceWP = calculate_distance(currentLocation, triWaypoints[iterWP]); // find distance between current and desired waypoints
   // if distance from current location to next WP is less than distance margin, move to next waypoint
