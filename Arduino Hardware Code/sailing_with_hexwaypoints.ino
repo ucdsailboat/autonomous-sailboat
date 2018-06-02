@@ -105,7 +105,6 @@ float Ki = 0.001;       // integral gain - starting value suggsted by Davi
 // desired path/direction
 float desiredPath;
 float currHeading;  // current actual angle/direction in degrees
-float debugHeading; // [0-360] without saturation
 float prevHeading; // store previous heading
 
 // data storage variables
@@ -217,7 +216,8 @@ void loop() {
   if (distanceWP < distMargin){
     iterWP += 1;
     // resets back to point 1 (hexWaypoints[0]) to prevent accessing wrong memory  
-    if (iterWP >= 3) {
+    // for sac -> hexWaypoints.size()
+    if (iterWP >= triWaypoints.size()) {
         iterWP = 0;
     }
     targetLocation = triWaypoints[iterWP];
@@ -230,7 +230,6 @@ void loop() {
   
   // update current location, number 1 will update currentLocation 
   update_position(currentLocation, 1);
-  // gps.f_get_position(&currentLocation.latitude, &currentLocation.longitude);
   // obtain desired direction by calculating path to the waypoint
   desiredPath = calculate_orientation(currentLocation, targetLocation);
   // obtain the needed rudder angle to reduce error b/w desired and actual 
@@ -334,12 +333,6 @@ float rudder_controller(float desiredPath, float heading) {
   // apply PI theory 
   controlAct = P() + I();
   angle = rudOffset + (rudderNeg- rudOffset)*(controlAct/180);
- /* // turning the boat in the counterclockwise direction
-  if (errorActual < 0) {
-    angle = rudOffset + (rudderPos- rudOffset)*(controlAct/180);
-    Serial.print(" positive error");
-    Serial.print(" angle: "); Serial.println(angle);
-  }*/
 
   angle = saturator_rudder(angle);
   return angle;
