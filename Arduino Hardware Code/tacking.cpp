@@ -120,6 +120,7 @@ struct location {
 location currentLocation, targetLocation, prevLocation; // define structs with gps coordinates
 bool locationSet = false; // if the previous location is stored or not 
 bool tacking = false; // flag for storing if the sailboat is in deadzone 
+bool reached = false; // flag for printing if waypoint is reached or not 
 int againstWindAngle = 180 - 45; // 45 degrees against the wind 
 float desiredAngle; 
 float windAngle; // direction of the wind 
@@ -213,7 +214,7 @@ void loop() {
   distanceWP = calculate_distance(currentLocation, triWaypoints[iterWP]); // find distance between current and desired waypoints
   // if distance from current location to next WP is less than distance margin, move to next waypoint
   if (distanceWP < distMargin){
-    Serial.println("Waypoint Reached!");
+    reached = true;
     iterWP += 1; // increment waypoint
     // for sac ->> hexWaypoints.size()
     if (iterWP >= triWaypoints.size()){
@@ -331,7 +332,13 @@ void loop() {
     Serial.print(currentLocation.longitude); Serial.print(",");               // GPS: longitude 
     Serial.print(gps.speed()*100); Serial.print(",");							// GPS: boat speed in knots 
     Serial.print(CalDirection); Serial.print(","); 							// Anemometer: Apparent Wind Direction in degrees
-    Serial.println(WindSpeed); 											    // Anemometer: Apparent Wind Speed in knots 
+    Serial.print(WindSpeed); Serial.print(",");										    // Anemometer: Apparent Wind Speed in knots 
+    if (reached == true) {
+        Serial.println("reached!");
+        reached = false;
+    } else {
+        Serial.println("not reached");
+    }
   }
       
   } // end of void loop
