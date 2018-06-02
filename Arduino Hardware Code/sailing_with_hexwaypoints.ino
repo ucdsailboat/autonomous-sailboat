@@ -289,16 +289,17 @@ void loop() {
   timer = millis();
      
   // Serial Monitor Printing Statements 
-  Serial.print(currentLocation.latitude,8); Serial.print(","); 								// GPS: latitude
+  Serial.print(currentLocation.latitude,8); Serial.print(",");                 // GPS: latitude
   Serial.print(currentLocation.longitude,8); Serial.print(",");               // GPS: longitude 
-  Serial.print(gps.speed()*100); Serial.print(",");													// GPS: boat speed in knots 
-  Serial.print(CalDirection); Serial.print(","); 														// Anemometer: Apparent Wind Direction in degrees
-  Serial.print(WindSpeed); Serial.print(",");																							// Anemometer: Apparent Wind Speed in knots 
+  Serial.print(gps.speed()*100); Serial.print(",");                         // GPS: boat speed in knots 
+  Serial.print(CalDirection); Serial.print(",");                            // Anemometer: Apparent Wind Direction in degrees
+  Serial.print(WindSpeed); Serial.print(",");                                             // Anemometer: Apparent Wind Speed in knots 
   if (reached == true) {
       Serial.println("reached!");
       reached = false;
   } else {
       Serial.println("not reached");
+  }
   }
     
 } // end of void loop
