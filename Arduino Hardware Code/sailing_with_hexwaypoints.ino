@@ -214,6 +214,7 @@ void loop() {
   distanceWP = calculate_distance(currentLocation, triWaypoints[iterWP]); // find distance between current and desired waypoints
   // if distance from current location to next WP is less than 8 meters, move to next waypoint
   if (distanceWP < distMargin){
+    Serial.println("Waypoint Reached!");
     iterWP += 1;
     // resets back to point 1 (hexWaypoints[0]) to prevent accessing wrong memory  
     // for sac -> hexWaypoints.size()
