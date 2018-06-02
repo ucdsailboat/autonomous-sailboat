@@ -97,7 +97,6 @@ float Ki = 0.001;       // integral gain - starting value suggsted by Davi
 // desired path/direction
 float desiredPath;
 float currHeading;  // current actual angle/direction in degrees
-float debugHeading; // [0-360] without saturation
 float prevHeading; // store previous heading
 
 // data storage variables
