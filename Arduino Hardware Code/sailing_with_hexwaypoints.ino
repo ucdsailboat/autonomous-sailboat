@@ -119,7 +119,8 @@ struct location {
 
 // rudder controls with waypoint navigation
 location currentLocation, targetLocation; // define structs with gps coordinates
-float distanceWP = 0.0; // holds value of the distance between waypoints 
+float distanceWP = 0.0; // holds value of the distance between waypoints
+bool reached = false; // flag for printing if waypoint is reached 
 std::vector<location> hexWaypoints; // vector that holds all the different waypoints 
 int iterWP = 0; // iterator for waypoints vector
 
@@ -214,7 +215,7 @@ void loop() {
   distanceWP = calculate_distance(currentLocation, triWaypoints[iterWP]); // find distance between current and desired waypoints
   // if distance from current location to next WP is less than 8 meters, move to next waypoint
   if (distanceWP < distMargin){
-    Serial.println("Waypoint Reached!");
+    reached = true;
     iterWP += 1;
     // resets back to point 1 (hexWaypoints[0]) to prevent accessing wrong memory  
     // for sac -> hexWaypoints.size()
@@ -286,12 +287,18 @@ void loop() {
   
   if (millis() - timer > display_timer) {
   timer = millis();
+     
   // Serial Monitor Printing Statements 
   Serial.print(currentLocation.latitude,8); Serial.print(","); 								// GPS: latitude
   Serial.print(currentLocation.longitude,8); Serial.print(",");               // GPS: longitude 
   Serial.print(gps.speed()*100); Serial.print(",");													// GPS: boat speed in knots 
   Serial.print(CalDirection); Serial.print(","); 														// Anemometer: Apparent Wind Direction in degrees
-  Serial.println(WindSpeed); 																								// Anemometer: Apparent Wind Speed in knots 
+  Serial.print(WindSpeed); Serial.print(",");																							// Anemometer: Apparent Wind Speed in knots 
+  if (reached == true) {
+      Serial.println("reached!");
+      reached = false;
+  } else {
+      Serial.println("not reached");
   }
     
 } // end of void loop
