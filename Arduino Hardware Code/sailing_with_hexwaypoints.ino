@@ -53,7 +53,7 @@ int CalDirection;         // apparent wind direction: [0,180] CW, [0,-179] CCW, 
 // rudder ctrl 
 TinyGPS gps; // gps object
 Servo servoRudder; // declare a servo object
-float distMargin = 3.0; // margin of error for waypoints (defined as a radius in [meters]) 
+float distMargin = 5.0; // margin of error for waypoints (defined as a radius in [meters]) 
 // SoftwareSerial ss(TX, RX); // use pins 4 and 3 for SW serial ports
 //using hardware serial 
 //HardwareSerial mySerial = Serial1;
