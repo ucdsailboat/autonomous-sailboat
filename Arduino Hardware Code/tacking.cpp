@@ -215,7 +215,7 @@ void loop() {
   if (distanceWP < distMargin){
     iterWP += 1; // increment waypoint
     // for sac ->> hexWaypoints.size()
-    if (iterWP == triWaypoints.size()){
+    if (iterWP >= triWaypoints.size()){
       iterWP = 0; // reset back to point 1 (hexWaypoints[0]) to prevent accessing wrong memory
     }
     // set targetLocation as the next waypoint in the vector
@@ -292,6 +292,8 @@ void loop() {
   desiredPath = calculate_orientation(currentLocation, targetLocation);
   // obtain the needed rudder angle to reduce error b/w desired and actual 
   rudderAngle = rudder_controller(desiredPath, currHeading);
+  if (rudderAngle > rudderPos) { rudderAngle = rudderPos;}
+  else if (rudderAngle < rudderNeg) {rudderAngle = rudderNeg;}
   servoRudder.write(rudderAngle); // write desired angle into servo 
   }
   
