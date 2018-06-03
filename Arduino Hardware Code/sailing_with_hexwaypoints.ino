@@ -119,7 +119,7 @@ struct location {
 
 // rudder controls with waypoint navigation
 location currentLocation, targetLocation; // define structs with gps coordinates
-float distanceWP = 0.0; // holds value of the distance between waypoints
+float distanceWP = 20.0; // holds value of the distance between waypoints, start it at higher value
 bool reached = false; // flag for printing if waypoint is reached 
 std::vector<location> hexWaypoints; // vector that holds all the different waypoints 
 int iterWP = 0; // iterator for waypoints vector
