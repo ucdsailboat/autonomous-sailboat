@@ -161,12 +161,12 @@ void setup() {
   targetLocation.longitude = -121.748065;
   triWaypoints.push_back(targetLocation);
 
-  targetLocation.latitude = 38.537769; // point 2
-  targetLocation.longitude = -121.747769;
+  targetLocation.latitude = 38.537712; // point 2
+  targetLocation.longitude = -121.747790;
   triWaypoints.push_back(targetLocation);
 
-  targetLocation.latitude = 38.537511; // point 3
-  targetLocation.longitude = -121.747820;
+  targetLocation.latitude = 38.537490; // point 3
+  targetLocation.longitude = -121.747851;
   triWaypoints.push_back(targetLocation); 
  
 /*  targetLocation.latitude =  38.537587; // point 4 (back to point 1): lake spafford (closest to shore)
