@@ -170,21 +170,21 @@ void setup() {
   targetLocation.longitude = -121.216605;
   hexWaypoints.push_back(targetLocation);
   */
-  targetLocation.latitude =  38.537587; // point 1: lake spafford (closest to shore)
-  targetLocation.longitude = -121.748064;
+  targetLocation.latitude =  38.537669; // point 1: lake spafford (closest to shore)
+  targetLocation.longitude = -121.748065;
   triWaypoints.push_back(targetLocation);
 
-  targetLocation.latitude =  38.537590; // point 2
-  targetLocation.longitude = -121.747832;
+  targetLocation.latitude = 38.537712; // point 2
+  targetLocation.longitude = -121.747790;
   triWaypoints.push_back(targetLocation);
 
-  targetLocation.latitude =  38.537742; // point 3
-  targetLocation.longitude = -121.747957;
+  targetLocation.latitude = 38.537490; // point 3
+  targetLocation.longitude = -121.747851;
   triWaypoints.push_back(targetLocation); 
   
-  targetLocation.latitude =  38.537587; // point 4 (back to point 1): lake spafford (closest to shore)
-  targetLocation.longitude = -121.748064;
-  triWaypoints.push_back(targetLocation); 
+  targetLocation.latitude =  38.537669; // point 4 (back to point 1): lake spafford (closest to shore)
+  targetLocation.longitude = -121.748065;
+  triWaypoints.push_back(targetLocation);
     
   Serial.begin(BAUDRATE);
   gpsPort.begin(BAUDRATE); // needs to be 9600 for proper GPS reading
