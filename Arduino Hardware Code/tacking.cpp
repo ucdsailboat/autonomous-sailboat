@@ -380,7 +380,7 @@ float rudder_controller(float desiredPath, float heading) {
   errorActual = saturator(errorActual);
   // apply PI theory 
   controlAct = P() + I();
-  angle = rudOffset + (rudderNeg- rudOffset)*(controlAct/180);
+  angle = rudOffset + (rudderPos- rudOffset)*(controlAct/180);
   angle = saturator_rudder(angle);
   return angle;
 }
