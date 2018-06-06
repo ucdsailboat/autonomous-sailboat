@@ -141,6 +141,7 @@ float distanceTK = 0.0; // distance between points for tacking
 float traveled = 0.0; // distance it has traveled 
 bool locationSet = false; // if the previous location is stored or not 
 bool tacking = false; // flag for storing if the sailboat is in deadzone
+float tackOffset = -45.0; // sail -45 off the course to tack
 
 
 void setup() {
@@ -260,10 +261,9 @@ void loop() {
   timeTack_curr = millis(); // get current time
   
   // add to count if the sailboat is in deadzone
-  if (CalDirection >= 174 || CalDirection <= -172)   {
-    //windDirections[j] = CalDirection; // store wind vane value in array
-    j++; // increment 
-    }
+  if (CalDirection >= 174 || CalDirection <= -172) {
+    j++; // increment your counter for whether tacking is necessary
+  }
     
   // reset timer when timeTack is greater than windThresh 
   if ((timeTack_curr - timeTack_prev) >= tackThresh) {
@@ -290,7 +290,7 @@ void loop() {
     distanceTK = calculate_distance(currentLocation, targetLocation);
     // find a path that is 45 degrees away from the desiredPath
     desiredPath = calculate_orientation(currentLocation, targetLocation);
-    tackPath = desiredPath + againstWindAngle; // path that is 45 degress away  
+    tackPath = desiredPath + tackOffset; // path that is 45 degress away  
     tackPath = saturator(tackPath);
     // total distance traveled
     traveled = calculate_distance(prevLocation, currentLocation);
@@ -317,7 +317,7 @@ void loop() {
     // distance is reach, turn off tacking flag 
     } else {
       // change tacking angle
-      againstWindAngle = -againstWindAngle;
+      //againstWindAngle = -againstWindAngle; // not really needed, since using tackOffset
       // turn off flags and reset variables 
       traveled = 0.0;
       distanceTK = 0.0; 
