@@ -1,3 +1,4 @@
+
 /*WIND OPTIMIZATION AUTONOMOUS MODE: This runs after the boat is set within the predefined radius (maxRadius) of the predefined origin (origin[2]). 
   While this is running, the sensor data will update every interval of "display_timer", with the anemometer wind speed updating every "T" seconds.
   It sends servo commands to the rudder and sail 
@@ -22,7 +23,6 @@
 #include <Adafruit_Sensor.h>
 #include <Wire.h>
 
-
 //VARIABLE INITIALIZATIONS
 //Data Logging Initialization
 float display_timer = 500;                //time (ms) between printing to the serial port
@@ -46,7 +46,8 @@ TinyGPSPlus tinyGPS;        // Create a TinyGPS object
 
 //Wind Optimization Initialization 
 //float origin[2] = {38.537587, -121.748064};   //GPS coordinates of origin (latitude, longitude) sequoia apt
-float origin[2] = {38.53876876, -121.72130584};
+float origin[2] = {38.53873825,-121.72176361};
+//float origin[2] = {38.53876876, -121.72130584}; //Lake Spafford
 //float curLocation[2]={origin[0],origin[1]};   //GPS coordinates of current location
 //float earthR= 6378100;      //m
 //float a;                    //used for calculating haversine angle
@@ -93,6 +94,7 @@ float previousTurnHeading;
 float currTurnHeading;
 float turnBufferAngle=10;
 bool CW;
+sensors_event_t magEvent;
 
 //FUNCTION PROTOTYPES
 // Anemometer Wind Direction Prototypes
@@ -141,6 +143,15 @@ void setup() {
   //Sail Setup
   servoS.attach(7);      // pin for the servoS control
   servoS.write(sZero); // initialize at zero position 
+  
+  //Magnetometer 
+    if(!mag.begin())
+  {
+    /* There was a problem detecting the LSM303 ... check your connections */
+    Serial.println("Oops, no LSM303 detected ... Check your wiring!");
+    while(1);
+  }
+
 }
 
 
@@ -149,7 +160,6 @@ void setup() {
 
 //LOOP 
 void loop() {
-  
   //[Update and Print Sensor Info]
   if (timer > millis())  timer = millis();                              //Reset timer if millis() or timer wraps around
   
@@ -170,8 +180,6 @@ void loop() {
   CalDirection = 180; 
   if(CalDirection <= -172) 
   CalDirection = -179;                          
-  
-  //CalDirection=0; //testing
   
   //Print data to serial port
   if (millis() - timer > display_timer) {                               
@@ -217,7 +225,6 @@ void loop() {
     //Prep to turn                           
     previousMillisTurning=millis();
     turning=1;
-    sensors_event_t magEvent; 
     mag.getEvent(&magEvent);
     previousTurnHeading= gen_heading(magEvent.magnetic.x, magEvent.magnetic.y); // [-180, 180]
     }
@@ -271,10 +278,10 @@ void printInfo(){
   Serial.print(tinyGPS.speed.mph()); Serial.print(",");
   Serial.print(CalDirection); Serial.print(","); 
   Serial.print(desiredAngle);Serial.print(",");
-  Serial.println(WindSpeed); 
+  Serial.print(WindSpeed); 
 
   //for testing
-  //Serial.print("\t\t");Serial.print(errorActual);Serial.print("\t");Serial.print(desiredAngle);Serial.print("\t");Serial.print(turning);Serial.print("\t");Serial.println(radius);
+  Serial.print("\t\t");Serial.print(CalDirection);Serial.print("\t\t");Serial.print(errorActual);Serial.print("\t");Serial.print(desiredAngle);Serial.print("\t");Serial.print(turning);Serial.print("\t");Serial.println(radius);
 }
 
 
