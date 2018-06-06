@@ -45,13 +45,9 @@ TinyGPSPlus tinyGPS;        // Create a TinyGPS object
 #define gpsPort Serial1
 
 //Wind Optimization Initialization 
-//float origin[2] = {38.537587, -121.748064};   //GPS coordinates of origin (latitude, longitude) sequoia apt
-float origin[2] = {38.53873825,-121.72176361};
+float origin[2] = {38.5629053, -121.7659831};   //GPS coordinates of origin (latitude, longitude) sequoia apt
 //float origin[2] = {38.53876876, -121.72130584}; //Lake Spafford
-//float curLocation[2]={origin[0],origin[1]};   //GPS coordinates of current location
-//float earthR= 6378100;      //m
-//float a;                    //used for calculating haversine angle
-float maxRadius = 7;          //m
+float maxRadius = 14;          //m
 float radius;               //current distance from origin
 int againstWindAngle=180-45;  
 float windAngle = 0;        //angle of wind in body frame (-180,180]
@@ -191,14 +187,9 @@ void loop() {
 
 
 
-//[Wind Optimization]
-  //curLocation[0]=tinyGPS.location.lat();   
-  //curLocation[1]=tinyGPS.location.lng();   
+//[Wind Optimization] 
   windAngle = CalDirection;
-  
-  //a = haversin((origin[0] - curLocation[0])*M_PI/180) + cos(origin[0]*M_PI/180)*cos(curLocation[0]*M_PI/180)*haversin((origin[1]- curLocation[1])*M_PI/180);
-  //radius=2*earthR*atan2(sqrt(a),sqrt(1-a));                                           
-  
+
   //Calculate radius from origin
   radius=tinyGPS.distanceBetween(origin[0],origin[1],tinyGPS.location.lat(),tinyGPS.location.lng());
   
@@ -232,15 +223,14 @@ void loop() {
    
 //[Rudder Controller]
   //If the boat is turning, determine if the boat is still turning and/or out of bounds
-  if (turning){
-    sensors_event_t magEvent; 
+  if (turning){ 
     mag.getEvent(&magEvent);
     currTurnHeading= gen_heading(magEvent.magnetic.x, magEvent.magnetic.y); // [-180, 180]
     
-    if (CW && abs(previousTurnHeading-currTurnHeading)>(againstWindAngle+turnBufferAngle)) servoR.write(-45+rOffset);         //Continue turning with the max rudder angle until the boat has turned around by at least againstWindAngle+turnBufferAngle (overshoots desiredAngle)
-    else if (!CW && abs(previousTurnHeading-currTurnHeading)>(againstWindAngle+turnBufferAngle)) servoR.write(45+rOffset);
+    if (CW && abs(previousTurnHeading-currTurnHeading)>(againstWindAngle+turnBufferAngle)) servoR.write(rudder_controller(previousTurnHeading+againstWindAngle+turnBufferAngle,currTurnHeading));         //Continue turning with the max rudder angle until the boat has turned around by at least againstWindAngle+turnBufferAngle (overshoots desiredAngle)
+    else if (!CW && abs(previousTurnHeading-currTurnHeading)>(againstWindAngle+turnBufferAngle)) servoR.write(rudder_controller(previousTurnHeading-againstWindAngle-turnBufferAngle,currTurnHeading));
     else servoR.write(rudder_controller(desiredAngle, windAngle));
-    if (radius<maxRadius-1)turning=0;     
+    if (radius<maxRadius)turning=0;     
   }
   else {
       servoR.write(rudder_controller(desiredAngle, windAngle));
@@ -261,9 +251,6 @@ void loop() {
   sCommand = 140;                                 // maximum for servo
   servoS.write(sCommand);                         // command sail servo
   prevHeading = currHeading;                      // current heading becomes previous heading 
-
-  //Serial.print(sCommand);
-  //Serial.println(CalDirection);
   }
 
 
@@ -272,16 +259,25 @@ void loop() {
 //FUNCTION DEFINITION
 //Sensor Data Logging Function Definition
 void printInfo(){
+  /*
   //Print latitude (degs), longitude (degs), GPS speed (mph), wind direction (degs), wind speed (knots)
   Serial.print(tinyGPS.location.lat(), 8); Serial.print(","); 
   Serial.print(tinyGPS.location.lng(), 8); Serial.print(","); 
   Serial.print(tinyGPS.speed.mph()); Serial.print(",");
   Serial.print(CalDirection); Serial.print(","); 
   Serial.print(desiredAngle);Serial.print(",");
-  Serial.print(WindSpeed); 
-
+  Serial.println(WindSpeed); 
+*/
   //for testing
-  Serial.print("\t\t");Serial.print(CalDirection);Serial.print("\t\t");Serial.print(errorActual);Serial.print("\t");Serial.print(desiredAngle);Serial.print("\t");Serial.print(turning);Serial.print("\t");Serial.println(radius);
+  Serial.print(desiredAngle);Serial.print("\t");
+  Serial.print(radius-maxRadius);Serial.print("\t");
+  Serial.print(turning);Serial.print("\t");
+  Serial.print(previousTurnHeading);Serial.print("\t");
+  Serial.print(currTurnHeading);Serial.print("\t");
+  Serial.print(currTurnHeading-previousTurnHeading);Serial.print("\t");
+  Serial.print(abs(previousTurnHeading-currTurnHeading)>(againstWindAngle+turnBufferAngle));Serial.print("\t");
+  Serial.print(CW);Serial.print("\t");
+  Serial.print(errorActual);Serial.println("\t");
 }
 
 
