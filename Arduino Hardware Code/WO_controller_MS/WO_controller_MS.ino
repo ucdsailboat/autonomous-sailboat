@@ -101,6 +101,7 @@ float desiredAngle =againstWindAngle;
 boolean turning=0;
 float previousMillisTurning;
 float turningBuffer = 3000; // buffer to allow boat to turn and get back into boundary (ms)
+float waypointDist = maxRadius/10;      // distance to execute waypoint tracking while a turn is required
 
 // 0 - north, 90 - east, 180/-180 - south, -90 - west 
 // desired path/direction
@@ -208,7 +209,7 @@ void setup() {
   servoS.attach(7);      // pin for the servoS control
   servoS.write(sZero); // initialize at zero position 
 
-  // Wind optimization origin
+  // Wind optimization origin, same as float origin
   originLocation.latitude = 38.537672;
   originLocation.longitude =  -121.748006;
   
@@ -339,7 +340,7 @@ void loop() {
   
   //Calculate radius from origin
     radius=tinyGPS.distanceBetween(origin[0],origin[1],tinyGPS.location.lat(),tinyGPS.location.lng());
-  
+    
   //If the boat is beyond maxRadius from the origin, determine which way to turn
   //M.S. Modifications: If the boat is beyond maxRadius from the origin, use waypoint tracking from the boundary point to the origin for specified distance 
     if (radius > maxRadius && !turning){  
@@ -353,28 +354,43 @@ void loop() {
       sensors_event_t magEvent; 
       mag.getEvent(&magEvent);
       currHeading = gen_heading(magEvent.magnetic.x, magEvent.magnetic.y); // [-180, 180]
-     
+      
       update_position(currentLocation, 1);          // update currentLocation
       boundaryLocation = currentLocation;           // if the boat is outside the boundary, store the gps coordinate
 
       desiredPath = calculate_orientation(boundaryLocation,originLocation);   // waypoint tracking from boundary to origin
-      rudderAngle = rudder_controller(desiredPath, currHeading); 
-      servoRudder.write(rudderAngle); 
+      rudderAngle = rudder_controller(desiredPath, currHeading);              // convert global heading to rudder angle
+      servoRudder.write(rudderAngle);
 
+      // sail command
       sDesired = sLimit*abs(CalDirection)/180;      // from Davi sail Control Law, executed on turns 
       sCommand = getSailServoCommand(sDesired);     // calibrate desired sail angle to angle command for servo
       if (sCommand > 140)
       sCommand = 140;         // max for servo 
       servoS.write(sCommand);     
-    //Prep to turn                           
+      
       previousMillisTurning=millis();
-      turning=1;
+      turning=1;          // toggle turning to true   
       }
-  
-  //If the boat is turning, determine if the boat is still turning and/or out of bounds
+
+      if (calculate_distance(currentLocation, originLocation)<waypointDist && turning){   
+        sensors_event_t magEvent; 
+        mag.getEvent(&magEvent);
+        currHeading = gen_heading(magEvent.magnetic.x, magEvent.magnetic.y); // [-180, 180]
+        update_position(currentLocation, 1);          // update currentLocation
+        desiredPath = calculate_orientation(currentLocation,originLocation);   // waypoint tracking from boundary to origin
+        rudderAngle = rudder_controller(desiredPath, currHeading);              // convert global heading to rudder angle
+    
+        servoRudder.write(rudderAngle);
+      }
+        else {
+          turning = 0;
+        } 
+      
+     //If the boat is turning, determine if the boat is still turning and/or out of bounds
     if (turning && radius<maxRadius && (millis()- previousMillisTurning)>turningBuffer){
         turning=0;          
-      }
+     }
 //[Rudder Controller]
     servoRudder.write(rudder_controller(desiredAngle, windAngle)); 
   //}   // uncomment for integration of waypoint and wind opt
