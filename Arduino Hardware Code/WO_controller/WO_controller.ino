@@ -161,7 +161,7 @@ void loop() {
   if(CalDirection <= -172) 
   CalDirection = -179;                          
   
-  CalDirection=0; //testing
+ // CalDirection=0; //testing
   
   //Print data to serial port
   if (millis() - timer > display_timer) {                               
