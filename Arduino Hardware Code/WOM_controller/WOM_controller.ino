@@ -20,6 +20,7 @@
 //Magnetometer
 #include <Adafruit_LSM303_U.h>
 #include <Adafruit_Sensor.h>
+#include <Wire.h>
 
 
 //VARIABLE INITIALIZATIONS
