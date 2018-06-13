@@ -9,5 +9,5 @@ Vivian Tran, <br/>
 Bryan Zhao
 
 __Special thanks to:__ <br/>
-Davi Henrique, <br/>
+Davi Henrique & <br/>
 University of Southampton Sailing Robot Team
