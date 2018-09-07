@@ -10,7 +10,7 @@ Bryan Zhao
 
 __Special thanks to:__ <br/>
 Davi Henrique & <br/>
-University of Southampton Sailing Robot Team
+University of Southampton Sailing Robot Team (https://github.com/Maritime-Robotics-Student-Society/sailing-robot)
 
 __Robotic Sailboat Wiki at:__ <br/>
 https://github.com/ucdsailboat/autonomous-sailboat/wiki
